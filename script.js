@@ -1,6 +1,139 @@
 // Log a message to the console to ensure the script is linked correctly
 console.log('JavaScript file is linked correctly.');
 
+// Difficulty system
+let currentDifficulty = 'easy';
+const difficultySettings = {
+    easy: {
+        clearFlowTarget: 512,     // Win at 512 instead of 2048
+        puzzleLevels: 3,          // Only play first 3 levels
+        timeBonus: 1.5,           // 50% more time for moves
+        name: 'Easy Mode',
+        color: '#4FCB53'
+    },
+    normal: {
+        clearFlowTarget: 1024,    // Win at 1024
+        puzzleLevels: 4,          // Play first 4 levels
+        timeBonus: 1.0,           // Normal time
+        name: 'Normal Mode',
+        color: '#2E9DF7'
+    },
+    hard: {
+        clearFlowTarget: 2048,    // Win at 2048
+        puzzleLevels: 5,          // Play all 5 levels
+        timeBonus: 0.7,           // 30% less time for moves
+        name: 'Hard Mode',
+        color: '#F5402C'
+    }
+};
+
+// Milestone tracking system
+const milestones = {
+    clearFlow: [
+        { score: 64, message: "🌱 Great start! You're making progress!" },
+        { score: 128, message: "💧 Water is getting cleaner!" },
+        { score: 256, message: "🚀 Halfway there! Keep going!" },
+        { score: 512, message: "🌟 Amazing! You're almost there!" },
+        { score: 1024, message: "🏆 Outstanding! So close to victory!" }
+    ],
+    puzzlePipeline: [
+        { level: 1, message: "🔧 First connection made! Well done!" },
+        { level: 2, message: "🌊 Water is flowing! Keep connecting!" },
+        { level: 3, message: "⚡ You're getting the hang of this!" },
+        { level: 4, message: "🎯 Master connector! Almost complete!" }
+    ]
+};
+
+// Track shown milestones to avoid repetition
+let shownMilestones = {
+    clearFlow: [],
+    puzzlePipeline: []
+};
+
+// DOM manipulation effects
+const domEffects = {
+    // Create and animate water droplets
+    createWaterDrops: function(count = 5) {
+        for (let i = 0; i < count; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'water-drop-effect';
+            drop.innerHTML = '💧';
+            drop.style.cssText = `
+                position: fixed;
+                font-size: 2rem;
+                pointer-events: none;
+                z-index: 1000;
+                left: ${Math.random() * window.innerWidth}px;
+                top: -50px;
+                animation: dropFall 3s ease-in forwards;
+            `;
+            document.body.appendChild(drop);
+            
+            // Remove drop after animation
+            setTimeout(() => {
+                if (drop.parentNode) {
+                    drop.parentNode.removeChild(drop);
+                }
+            }, 3000);
+        }
+    },
+    
+    // Create celebratory particles
+    createCelebration: function() {
+        const particles = ['🎉', '🌟', '💫', '✨', '🎊'];
+        for (let i = 0; i < 15; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'celebration-particle';
+            particle.innerHTML = particles[Math.floor(Math.random() * particles.length)];
+            particle.style.cssText = `
+                position: fixed;
+                font-size: 1.5rem;
+                pointer-events: none;
+                z-index: 1000;
+                left: ${Math.random() * window.innerWidth}px;
+                top: ${Math.random() * window.innerHeight}px;
+                animation: celebrationPop 2s ease-out forwards;
+            `;
+            document.body.appendChild(particle);
+            
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 2000);
+        }
+    },
+    
+    // Show milestone message
+    showMilestone: function(message) {
+        const milestone = document.createElement('div');
+        milestone.className = 'milestone-popup';
+        milestone.innerHTML = message;
+        milestone.style.cssText = `
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #FFC907 0%, #2E9DF7 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(46,157,247,0.3);
+            animation: milestoneAppear 3s ease-out forwards;
+        `;
+        document.body.appendChild(milestone);
+        
+        setTimeout(() => {
+            if (milestone.parentNode) {
+                milestone.parentNode.removeChild(milestone);
+            }
+        }, 3000);
+    }
+};
+
 // Main menu and progress logic for Charity Water Game
 // This code shows/hides screens and updates the water tank as games are completed
 
@@ -19,228 +152,144 @@ const progressText = document.getElementById('progress-text');
 const playClearFlowBtn = document.getElementById('play-clear-flow');
 const playPuzzlePipelineBtn = document.getElementById('play-puzzle-pipeline');
 
-// Simple sound system for game feedback
-const sounds = {
-    // Create simple beep sounds using Web Audio API
-    move: () => playBeep(220, 100),
-    merge: () => playBeep(440, 200),
-    win: () => playBeep(880, 500),
-    click: () => playBeep(330, 80),
-    connect: () => playBeep(550, 150),
-    complete: () => playBeep(660, 300)
-};
+// Difficulty selection functionality
+document.addEventListener('DOMContentLoaded', () => {
+    // Set up difficulty buttons
+    const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+    difficultyButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons
+            difficultyButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            button.classList.add('active');
+            // Update current difficulty
+            currentDifficulty = button.dataset.difficulty;
+            // Save difficulty preference
+            localStorage.setItem('cw_difficulty', currentDifficulty);
+            
+            // Visual feedback
+            sounds.click();
+            domEffects.createWaterDrops(2);
+            
+            // Update UI to show selected difficulty
+            updateDifficultyDisplay();
+        });
+    });
+    
+    // Load saved difficulty preference
+    const savedDifficulty = localStorage.getItem('cw_difficulty');
+    if (savedDifficulty && difficultySettings[savedDifficulty]) {
+        currentDifficulty = savedDifficulty;
+        // Update UI to reflect saved difficulty
+        difficultyButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.difficulty === currentDifficulty);
+        });
+    }
+    
+    updateDifficultyDisplay();
+});
 
-// Helper function to create beep sounds
-function playBeep(frequency, duration) {
-    try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = frequency;
-        oscillator.type = 'sine';
-        
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + duration / 1000);
-    } catch (e) {
-        // Silently fail if audio context not supported
-        console.log('Audio not supported');
+// Update difficulty display
+function updateDifficultyDisplay() {
+    const settings = difficultySettings[currentDifficulty];
+    const difficultyInfo = document.querySelector('.difficulty-section h3');
+    if (difficultyInfo) {
+        difficultyInfo.innerHTML = `Choose Your Difficulty - Current: <span style="color: ${settings.color}">${settings.name}</span>`;
     }
 }
 
-// Show main menu
-function showMainMenu() {
-    mainMenu.style.display = '';
-    gameSection.style.display = 'none';
-    celebrationSection.style.display = 'none';
-    updateProgress();
-}
-
-// Show celebration screen
-function showCelebration() {
-    sounds.complete(); // Play completion sound
-    mainMenu.style.display = 'none';
-    gameSection.style.display = 'none';
-    celebrationSection.style.display = '';
-    celebrationSection.innerHTML = `
-        <div class="celebration-page">
-            <div class="celebration-header">
-                <h1>🎉 Congratulations! 🎉</h1>
-                <h2>You've successfully cleaned the water tank!</h2>
-                <div class="tank-visual">
-                    <div class="completed-tank">
-                        <div class="clean-water"></div>
-                        <div class="water-drop">💧</div>
-                    </div>
-                    <p class="tank-label">100% Clean Water Achieved!</p>
-                </div>
-            </div>
-
-            <div class="impact-section">
-                <h3>� Your Impact & charity: water's Mission</h3>
-                <div class="impact-grid">
-                    <div class="impact-card">
-                        <div class="impact-icon">🚰</div>
-                        <h4>Clean Water Access</h4>
-                        <p>Every $40 provides clean water to one person for life through sustainable water projects.</p>
-                    </div>
-                    <div class="impact-card">
-                        <div class="impact-icon">🏘️</div>
-                        <h4>Community Impact</h4>
-                        <p>Over 100,000 water projects funded, serving millions of people in 29 countries worldwide.</p>
-                    </div>
-                    <div class="impact-card">
-                        <div class="impact-icon">💯</div>
-                        <h4>100% Model</h4>
-                        <p>100% of public donations go directly to fund clean water projects - private donors cover operating costs.</p>
-                    </div>
-                    <div class="impact-card">
-                        <div class="impact-icon">📱</div>
-                        <h4>Transparency</h4>
-                        <p>Every project is tracked with GPS coordinates and photos, so you can see exactly where your donation goes.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stats-section">
-                <h3>🌟 Amazing Water Facts</h3>
-                <div class="fact-carousel">
-                    <div class="fact-item active">
-                        <span class="fact-number">663 million</span>
-                        <span class="fact-text">people worldwide lack access to clean water</span>
-                    </div>
-                    <div class="fact-item">
-                        <span class="fact-number">2.4 billion</span>
-                        <span class="fact-text">people don't have access to a toilet</span>
-                    </div>
-                    <div class="fact-item">
-                        <span class="fact-number">6 miles</span>
-                        <span class="fact-text">average distance women walk to collect water</span>
-                    </div>
-                    <div class="fact-item">
-                        <span class="fact-number">40 billion</span>
-                        <span class="fact-text">hours spent collecting water annually worldwide</span>
-                    </div>
-                </div>
-                <div class="carousel-dots">
-                    <span class="dot active" onclick="showFact(0)"></span>
-                    <span class="dot" onclick="showFact(1)"></span>
-                    <span class="dot" onclick="showFact(2)"></span>
-                    <span class="dot" onclick="showFact(3)"></span>
-                </div>
-            </div>
-
-            <div class="action-section">
-                <h3>🤝 Take Action</h3>
-                <p class="action-intro">Ready to make a real difference? Here's how you can help bring clean water to those who need it most:</p>
-                <div class="action-buttons">
-                    <a href="https://www.charitywater.org/donate" target="_blank" class="action-btn primary">
-                        💝 Donate Now
-                        <small>Make a direct impact</small>
-                    </a>
-                    <a href="https://www.charitywater.org/projects" target="_blank" class="action-btn secondary">
-                        🗺️ View Projects
-                        <small>See where donations go</small>
-                    </a>
-                    <a href="https://www.charitywater.org/fundraise" target="_blank" class="action-btn secondary">
-                        🎯 Start a Campaign
-                        <small>Fundraise for clean water</small>
-                    </a>
-                    <a href="https://www.charitywater.org/newsletter" target="_blank" class="action-btn secondary">
-                        📧 Get Updates
-                        <small>Stay informed</small>
-                    </a>
-                </div>
-            </div>
-
-            <div class="game-controls">
-                <button class="main-btn secondary" id="reset-progress">🔄 Play Again</button>
-                <button class="main-btn primary" id="share-achievement">📤 Share Achievement</button>
-                <button class="main-btn" id="back-to-menu">🏠 Back to Menu</button>
-            </div>
-        </div>
-    `;
+// Check and show milestones
+function checkMilestones(gameType, value) {
+    const milestonesForGame = milestones[gameType];
+    if (!milestonesForGame) return;
     
-    // Add interactive functionality
-    setupCelebrationInteractions();
-}
-
-// Function to handle celebration page interactions
-function setupCelebrationInteractions() {
-    // Fact carousel functionality
-    let currentFact = 0;
-    const facts = document.querySelectorAll('.fact-item');
-    const dots = document.querySelectorAll('.dot');
-    
-    // Auto-rotate facts every 4 seconds
-    setInterval(() => {
-        showFact((currentFact + 1) % facts.length);
-    }, 4000);
-    
-    // Manual fact navigation
-    window.showFact = function(index) {
-        facts[currentFact].classList.remove('active');
-        dots[currentFact].classList.remove('active');
-        currentFact = index;
-        facts[currentFact].classList.add('active');
-        dots[currentFact].classList.add('active');
-    };
-    
-    // Button event handlers
-    document.getElementById('reset-progress').onclick = () => {
-        sounds.click();
-        if (currentPlayer) {
-            currentPlayer.clearFlow = false;
-            currentPlayer.puzzlePipelineLevels = 0;
-            savePlayer(currentPlayer);
+    milestonesForGame.forEach(milestone => {
+        const key = gameType === 'clearFlow' ? 'score' : 'level';
+        const hasShown = shownMilestones[gameType].includes(milestone[key]);
+        
+        if (!hasShown && value >= milestone[key]) {
+            domEffects.showMilestone(milestone.message);
+            domEffects.createCelebration();
+            shownMilestones[gameType].push(milestone[key]);
         }
-        // Also clear old localStorage items
-        localStorage.removeItem('cw_clearFlow');
-        localStorage.removeItem('cw_puzzlePipeline'); 
-        localStorage.removeItem('cw_puzzlePipelineLevels');
-        showMainMenu();
-    };
-    
-    document.getElementById('back-to-menu').onclick = () => {
-        sounds.click();
-        showMainMenu();
-    };
-    
-    document.getElementById('share-achievement').onclick = () => {
-        sounds.click();
-        if (navigator.share) {
-            navigator.share({
-                title: 'I completed the Charity Water Game!',
-                text: 'I just learned about clean water access and completed all the water cleanup games. Join me in supporting charity: water!',
-                url: window.location.href
-            });
-        } else {
-            // Fallback for browsers without Web Share API
-            const text = 'I just completed the Charity Water Game and learned about clean water access! 🌊 Check it out and support charity: water\'s mission.';
-            navigator.clipboard.writeText(text + ' ' + window.location.href).then(() => {
-                alert('Achievement copied to clipboard! Share it on social media.');
-            }).catch(() => {
-                alert('Share this achievement: ' + text);
-            });
-        }
-    };
+    });
 }
+
+// DOMContentLoaded event to set up difficulty buttons
+document.addEventListener('DOMContentLoaded', () => {
+    // Set up difficulty buttons
+    const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+    difficultyButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons
+            difficultyButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            button.classList.add('active');
+            // Update current difficulty
+            currentDifficulty = button.dataset.difficulty;
+            // Save difficulty preference
+            localStorage.setItem('cw_difficulty', currentDifficulty);
+            
+            // Visual feedback
+            sounds.click();
+            domEffects.createWaterDrops(2);
+            
+            // Update UI to show selected difficulty
+            updateDifficultyDisplay();
+        });
+    });
+    
+    // Load saved difficulty preference
+    const savedDifficulty = localStorage.getItem('cw_difficulty');
+    if (savedDifficulty && difficultySettings[savedDifficulty]) {
+        currentDifficulty = savedDifficulty;
+        // Update UI to reflect saved difficulty
+        difficultyButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.difficulty === currentDifficulty);
+        });
+    }
+    
+    updateDifficultyDisplay();
+});
+
+// Update difficulty display
+function updateDifficultyDisplay() {
+    const settings = difficultySettings[currentDifficulty];
+    const difficultyInfo = document.querySelector('.difficulty-section h3');
+    if (difficultyInfo) {
+        difficultyInfo.innerHTML = `Choose Your Difficulty - Current: <span style="color: ${settings.color}">${settings.name}</span>`;
+    }
+}
+
+// Check and show milestones
+function checkMilestones(gameType, value) {
+    const milestonesForGame = milestones[gameType];
+    if (!milestonesForGame) return;
+    
+    milestonesForGame.forEach(milestone => {
+        const key = gameType === 'clearFlow' ? 'score' : 'level';
+        const hasShown = shownMilestones[gameType].includes(milestone[key]);
+        
+        if (!hasShown && value >= milestone[key]) {
+            domEffects.showMilestone(milestone.message);
+            domEffects.createCelebration();
+            shownMilestones[gameType].push(milestone[key]);
+        }
+    });
+}
+
+// --- existing code ---
 
 // Button event listeners
 playClearFlowBtn.onclick = () => {
     sounds.click(); // Add click sound
+    domEffects.createWaterDrops(2); // Add water drop effects
     mainMenu.style.display = 'none';
     gameSection.style.display = '';
     celebrationSection.style.display = 'none';
     // Show the 2048-style game grid and score
     gameSection.innerHTML = `
-        <h2>🚰 Clear the Flow</h2>
+        <h2>🚰 Clear the Flow (${difficultySettings[currentDifficulty].name})</h2>
         <div id="cf-score">Score: 0</div>
         <div class="cf-board" id="cf-board"></div>
         <div class="cf-controls">
@@ -359,14 +408,57 @@ function startClearFlowGame() {
 
     // Helper: Update the board UI
     function updateBoard() {
-        scoreDiv.textContent = `Score: ${score}`;
+        scoreDiv.textContent = `Score: ${score} | Target: ${difficultySettings[currentDifficulty].clearFlowTarget} | Mode: ${difficultySettings[currentDifficulty].name}`;
         boardDiv.innerHTML = '';
+        
+        // Check milestones
+        checkMilestones('clearFlow', score);
+        
         for (let r=0; r<4; r++) {
             for (let c=0; c<4; c++) {
                 const tile = document.createElement('div');
                 tile.className = 'cf-tile';
                 tile.textContent = board[r][c] === 0 ? '' : board[r][c];
                 tile.setAttribute('data-value', board[r][c]);
+                
+                // Add special styling for target tile
+                if (board[r][c] === difficultySettings[currentDifficulty].clearFlowTarget) {
+                    tile.style.border = '3px solid #FFC907';
+                    tile.style.boxShadow = '0 0 20px rgba(255,201,7,0.5)';
+                }
+                
+                // Add click interaction for visual feedback
+                if (board[r][c] > 0) {
+                    tile.addEventListener('click', () => {
+                        // Create a ripple effect
+                        const ripple = document.createElement('div');
+                        ripple.className = 'tile-ripple';
+                        ripple.style.cssText = `
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            width: 10px;
+                            height: 10px;
+                            background: rgba(255,201,7,0.6);
+                            border-radius: 50%;
+                            transform: translate(-50%, -50%);
+                            animation: rippleExpand 0.6s ease-out;
+                            pointer-events: none;
+                        `;
+                        tile.style.position = 'relative';
+                        tile.appendChild(ripple);
+                        
+                        // Remove ripple after animation
+                        setTimeout(() => {
+                            if (ripple.parentNode) {
+                                ripple.parentNode.removeChild(ripple);
+                            }
+                        }, 600);
+                        
+                        sounds.click();
+                    });
+                }
+                
                 boardDiv.appendChild(tile);
             }
         }
@@ -465,12 +557,16 @@ function startClearFlowGame() {
 
     // Check for win or game over
     function checkGameOver() {
-        // Win if 2048 tile is present
+        // Get current difficulty target
+        const winTarget = difficultySettings[currentDifficulty].clearFlowTarget;
+        
+        // Win if target tile is reached
         for (let r=0; r<4; r++) {
             for (let c=0; c<4; c++) {
-                if (board[r][c] === 2048) {
+                if (board[r][c] === winTarget) {
                     sounds.win(); // Play win sound
-                    messageDiv.innerHTML = '<span class="cf-win">🎉 You filtered the water!<br>Click Back to Menu.</span>';
+                    domEffects.createCelebration(); // Add celebration effects
+                    messageDiv.innerHTML = `<span class="cf-win">🎉 You filtered the water on ${difficultySettings[currentDifficulty].name}!<br>Click Back to Menu.</span>`;
                     window.onkeydown = null;
                     // Mark as complete using per-player progress
                     markClearFlowComplete();
@@ -508,12 +604,13 @@ function startClearFlowGame() {
 
 playPuzzlePipelineBtn.onclick = () => {
     sounds.click(); // Add click sound
+    domEffects.createWaterDrops(2); // Add water drop effects
     mainMenu.style.display = 'none';
     gameSection.style.display = '';
     celebrationSection.style.display = 'none';
     // Show the Puzzle Pipeline game
     gameSection.innerHTML = `
-        <h2>🔗 Puzzle Pipeline</h2>
+        <h2>🔗 Puzzle Pipeline (${difficultySettings[currentDifficulty].name})</h2>
         <div id="pp-instructions">Connect the numbers in order to make a path from the water source to the tank!</div>
         <div class="pp-board" id="pp-board"></div>
         <div class="pp-controls">
@@ -539,6 +636,9 @@ playPuzzlePipelineBtn.onclick = () => {
 
 // --- Number Link (Flow Free) Style Puzzle Pipeline ---
 function startPuzzlePipeline(levelIndex = 0) {
+    // Get max levels based on difficulty
+    const maxLevels = difficultySettings[currentDifficulty].puzzleLevels;
+    
     // Each level: grid, 0=empty, 1/2/3...=numbered endpoints
     const levels = [
         // Level 1: 4x4, 2 pairs (easy)
@@ -622,13 +722,13 @@ function startPuzzlePipeline(levelIndex = 0) {
         instr.id = 'pp-instructions-box';
         instr.className = 'game-instructions';
         instr.innerHTML = `
-            <strong>How to Play Puzzle Pipeline:</strong><br>
+            <strong>How to Play Puzzle Pipeline (${difficultySettings[currentDifficulty].name}):</strong><br>
             <ul>
                 <li>Connect matching numbers by dragging a path between them.</li>
                 <li>Paths can't cross or overlap each other.</li>
                 <li>Fill the whole grid to win the level!</li>
                 <li><b>You must connect the lowest-numbered pair first (start with 1), then the next lowest, and so on.</b></li>
-                <li>Try all 5 levels. Each one gets a bit trickier!</li>
+                <li>Playing ${maxLevels} levels on ${difficultySettings[currentDifficulty].name}!</li>
             </ul>
         `;
         boardDiv.parentElement.insertBefore(instr, boardDiv);
@@ -812,26 +912,40 @@ function startPuzzlePipeline(levelIndex = 0) {
         if (filled === size*size && Object.keys(paths).length === Object.keys(endpoints).length) {
             solved = true;
             sounds.complete(); // Play completion sound
+            domEffects.createCelebration(); // Add celebration effects
+            domEffects.createWaterDrops(3); // Add water drops
+            
+            // Check milestone
+            checkMilestones('puzzlePipeline', levelIndex + 1);
+            
             // Remove any previous overlay
             let oldOverlay = document.getElementById('pp-win-overlay');
             if (oldOverlay) oldOverlay.remove();
+            
             // Create overlay for centered win message
             const overlay = document.createElement('div');
             overlay.id = 'pp-win-overlay';
             overlay.className = 'pp-win-center';
-            if (levelIndex === levels.length - 1) {
-                overlay.innerHTML = `🎉 Water flows!<br>You solved the pipeline!<br>Back to the main hub...`;
+            
+            // Check if this is the last level for current difficulty
+            const maxLevels = difficultySettings[currentDifficulty].puzzleLevels;
+            const isLastLevel = levelIndex >= maxLevels - 1;
+            
+            if (isLastLevel) {
+                overlay.innerHTML = `🎉 Water flows!<br>You completed ${difficultySettings[currentDifficulty].name}!<br>Back to the main hub...`;
             } else {
-                overlay.innerHTML = `🎉 Water flows!<br>You solved the pipeline!<br>Moving to Next Level...`;
+                overlay.innerHTML = `🎉 Water flows!<br>Level ${levelIndex + 1} complete!<br>Moving to Next Level...`;
             }
+            
             document.body.appendChild(overlay);
             markPuzzlePipelineLevelComplete(levelIndex);
-            if (levelIndex === levels.length - 1) {
+            
+            if (isLastLevel) {
                 setTimeout(() => {
                     overlay.remove();
                     showMainMenu();
                     // If player finished all, record time and update leaderboard
-                    if (currentPlayer && currentPlayer.clearFlow && currentPlayer.puzzlePipelineLevels === 5) {
+                    if (currentPlayer && currentPlayer.clearFlow && currentPlayer.puzzlePipelineLevels === maxLevels) {
                         const end = Date.now();
                         let start = parseInt(localStorage.getItem('cw_startTime_' + currentPlayer.email) || '0', 10);
                         if (!start) start = end;

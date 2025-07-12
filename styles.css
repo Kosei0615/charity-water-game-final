@@ -15,7 +15,7 @@ Secondary Colors:
 */
 
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: 'Source Sans Pro', 'Segoe UI', Arial, sans-serif;
     background: linear-gradient(135deg, #e0f7fa 0%, #8BD1CB 100%);
     margin: 0;
     padding: 0;
@@ -162,7 +162,7 @@ section, main {
     background: #fff;
     color: #2E9DF7;
     box-shadow: 0 1px 4px rgba(46,157,247,0.08);
-    transition: background 0.2s, color 0.2s;
+    transition: all 0.3s ease;
 }
 .cf-tile[data-value="2"] { background: #FFC907; color: #222; }
 .cf-tile[data-value="4"] { background: #8BD1CB; color: #222; }
@@ -175,6 +175,11 @@ section, main {
 .cf-tile[data-value="512"] { background: #FFC907; color: #fff; }
 .cf-tile[data-value="1024"] { background: #2E9DF7; color: #fff; }
 .cf-tile[data-value="2048"] { background: #4FCB53; color: #fff; border: 2px solid #FFC907; }
+
+.cf-tile:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
 
 .cf-controls {
     display: flex;
@@ -546,294 +551,102 @@ section, main {
     }
 }
 
-/* Enhanced Celebration Page Styles */
-.celebration-page {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-    text-align: center;
-    animation: fadeInUp 0.8s ease-out;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
+/* DOM Effect Animations */
+@keyframes dropFall {
+    0% {
+        transform: translateY(0) rotate(0deg);
         opacity: 1;
-        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
     }
 }
 
-.celebration-header h1 {
-    color: #2E9DF7;
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+@keyframes celebrationPop {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2) rotate(180deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0) rotate(360deg);
+        opacity: 0;
+    }
 }
 
-.celebration-header h2 {
-    color: #159A48;
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
-    font-weight: normal;
+@keyframes milestoneAppear {
+    0% {
+        transform: translateX(-50%) scale(0);
+        opacity: 0;
+    }
+    10% {
+        transform: translateX(-50%) scale(1.1);
+        opacity: 1;
+    }
+    20% {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+    }
+    80% {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-50%) scale(0);
+        opacity: 0;
+    }
 }
 
-.tank-visual {
-    margin: 2rem 0;
+/* Mobile responsiveness for difficulty section */
+@media (max-width: 600px) {
+    .difficulty-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .difficulty-btn {
+        width: 100%;
+        max-width: 280px;
+    }
+    
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .footer-section {
+        text-align: center;
+    }
 }
 
-.completed-tank {
-    width: 120px;
-    height: 180px;
-    border: 4px solid #2E9DF7;
-    border-radius: 20px 20px 40px 40px;
-    background: linear-gradient(to top, #4FCB53 100%);
-    position: relative;
-    margin: 0 auto 1rem;
-    box-shadow: 0 4px 16px rgba(79,203,83,0.3);
-    overflow: hidden;
+@keyframes rippleExpand {
+    0% {
+        width: 10px;
+        height: 10px;
+        opacity: 1;
+    }
+    100% {
+        width: 60px;
+        height: 60px;
+        opacity: 0;
+    }
 }
 
-.clean-water {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to top, #4FCB53 80%, #2E9DF7 100%);
-    border-radius: 0 0 40px 40px;
-    animation: waterShimmer 2s ease-in-out infinite alternate;
-}
-
-@keyframes waterShimmer {
-    from { filter: brightness(1); }
-    to { filter: brightness(1.1); }
-}
-
-.water-drop {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 1.5rem;
-    animation: dropBounce 1.5s ease-in-out infinite;
-}
-
-@keyframes dropBounce {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(-5px); }
-}
-
-.tank-label {
-    color: #4FCB53;
-    font-weight: bold;
-    font-size: 1.1rem;
-}
-
-/* Impact Section */
-.impact-section {
-    margin: 3rem 0;
-    padding: 2rem;
-    background: linear-gradient(135deg, #f8fbff 0%, #e8f4f8 100%);
-    border-radius: 20px;
-    box-shadow: 0 4px 16px rgba(46,157,247,0.1);
-}
-
-.impact-section h3 {
-    color: #2E9DF7;
-    font-size: 1.8rem;
-    margin-bottom: 2rem;
-}
-
-.impact-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-}
-
-.impact-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 15px;
-    box-shadow: 0 2px 12px rgba(46,157,247,0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.impact-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(46,157,247,0.15);
-}
-
-.impact-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-}
-
-.impact-card h4 {
-    color: #2E9DF7;
-    margin-bottom: 0.5rem;
-    font-size: 1.2rem;
-}
-
-.impact-card p {
-    color: #555;
-    line-height: 1.6;
-}
-
-/* Stats Section */
-.stats-section {
-    margin: 3rem 0;
-    padding: 2rem;
-    background: linear-gradient(135deg, #fff8e1 0%, #f0f7ff 100%);
-    border-radius: 20px;
-    box-shadow: 0 4px 16px rgba(255,201,7,0.1);
-}
-
-.stats-section h3 {
-    color: #FF902A;
-    font-size: 1.8rem;
-    margin-bottom: 2rem;
-}
-
-.fact-carousel {
-    position: relative;
-    height: 120px;
-    margin-bottom: 1rem;
-}
-
-.fact-item {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.5s ease;
-    text-align: center;
-}
-
-.fact-item.active {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.fact-number {
-    display: block;
-    font-size: 3rem;
-    font-weight: bold;
-    color: #FF902A;
-    margin-bottom: 0.5rem;
-}
-
-.fact-text {
-    display: block;
-    font-size: 1.2rem;
-    color: #2E9DF7;
-    line-height: 1.4;
-}
-
-.carousel-dots {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #ccc;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
-
-.dot.active {
-    background: #FF902A;
-}
-
-/* Action Section */
-.action-section {
-    margin: 3rem 0;
-    padding: 2rem;
-    background: linear-gradient(135deg, #f0fff4 0%, #e8f5e8 100%);
-    border-radius: 20px;
-    box-shadow: 0 4px 16px rgba(79,203,83,0.1);
-}
-
-.action-section h3 {
-    color: #159A48;
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
-}
-
-.action-intro {
-    color: #555;
-    font-size: 1.1rem;
-    margin-bottom: 2rem;
-    line-height: 1.6;
-}
-
-.action-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
-.action-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.5rem 1rem;
-    border-radius: 15px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.1rem;
+/* Enhanced tile animations */
+.cf-tile {
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.action-btn.primary {
-    background: linear-gradient(135deg, #4FCB53 0%, #159A48 100%);
-    color: white;
+.cf-tile:hover {
+    transform: scale(1.05);
+    cursor: pointer;
 }
 
-.action-btn.secondary {
-    background: linear-gradient(135deg, #2E9DF7 0%, #1976d2 100%);
-    color: white;
-}
-
-.action-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-}
-
-.action-btn small {
-    margin-top: 0.5rem;
-    opacity: 0.9;
-    font-size: 0.9rem;
-    font-weight: normal;
-}
-
-/* Game Controls */
-.game-controls {
-    margin-top: 3rem;
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.game-controls .main-btn {
-    min-width: 150px;
-}
-
-.game-controls .main-btn.secondary {
-    background: linear-gradient(90deg, #8BD1CB 60%, #2E9DF7 100%);
-}
-
-.game-controls .main-btn.primary {
-    background: linear-gradient(90deg, #4FCB53 60%, #159A48 100%);
+.pp-cell:hover {
+    transform: scale(1.05);
+    cursor: pointer;
 }

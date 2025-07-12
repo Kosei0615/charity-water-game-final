@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Charity Water Game</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Add Google Fonts - Proxima Nova is closest to charity: water's brand font -->
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -27,6 +29,29 @@
             <button type="submit" class="main-btn">Register / Login</button>
         </form>
         <a href="https://www.charitywater.org/" target="_blank" class="charity-link">🌊 Visit charity: water website</a>
+        
+        <!-- Difficulty Selection -->
+        <div class="difficulty-section">
+            <h3>Choose Your Difficulty</h3>
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn active" data-difficulty="easy">
+                    <span class="difficulty-icon">🌱</span>
+                    <span class="difficulty-name">Easy</span>
+                    <span class="difficulty-desc">More time, lower targets</span>
+                </button>
+                <button class="difficulty-btn" data-difficulty="normal">
+                    <span class="difficulty-icon">💧</span>
+                    <span class="difficulty-name">Normal</span>
+                    <span class="difficulty-desc">Balanced challenge</span>
+                </button>
+                <button class="difficulty-btn" data-difficulty="hard">
+                    <span class="difficulty-icon">🏆</span>
+                    <span class="difficulty-name">Hard</span>
+                    <span class="difficulty-desc">Quick pace, high targets</span>
+                </button>
+            </div>
+        </div>
+        
         <div class="water-tank-container">
             <div class="water-tank">
                 <div class="water-fill" id="water-fill"></div>
@@ -62,6 +87,42 @@
             </form>
         </div>
     </section>
+    
+    <!-- Enhanced Footer with charity: water branding -->
+    <footer class="charity-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About charity: water</h4>
+                <p>Bringing clean water to everyone through innovative technology, partnerships, and proof.</p>
+                <div class="footer-links">
+                    <a href="https://www.charitywater.org/about" target="_blank">Our Mission</a>
+                    <a href="https://www.charitywater.org/projects" target="_blank">Water Projects</a>
+                    <a href="https://www.charitywater.org/why-water" target="_blank">Why Water</a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Take Action</h4>
+                <div class="footer-links">
+                    <a href="https://www.charitywater.org/donate" target="_blank" class="donate-link">💝 Donate Now</a>
+                    <a href="https://www.charitywater.org/fundraise" target="_blank">🎯 Start a Campaign</a>
+                    <a href="https://www.charitywater.org/newsletter" target="_blank">📧 Get Updates</a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <div class="footer-links">
+                    <a href="https://www.charitywater.org/stories" target="_blank">Stories</a>
+                    <a href="https://www.charitywater.org/blog" target="_blank">Blog</a>
+                    <a href="https://www.charitywater.org/contact" target="_blank">Contact</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 charity: water. All rights reserved. | <a href="https://www.charitywater.org/privacy" target="_blank">Privacy Policy</a></p>
+            <p class="footer-mission">100% of public donations go directly to fund clean water projects.</p>
+        </div>
+    </footer>
+    
     <script src="script.js"></script>
 </body>
 </html>
