@@ -14,79 +14,135 @@
         <h1>Welcome to water clean-up Adventure powered by charity:water</h1>
         <p class="intro">Help bring clean water to everyone! Play both games to clean the water tank and learn about charity: water's mission.</p>
     </header>
-    <main id="main-menu">
-        <form id="player-form" class="player-form">
-            <div class="player-form-header">
-                <h2>Register to Play</h2>
-                <p class="player-form-desc">Enter your name and email to save your progress and start playing!</p>
+    <main>
+        <!-- Register Page -->
+        <div id="register-page" class="page register-page active">
+            <div class="register-welcome">
+                <h2>Welcome to Water Adventure!</h2>
+                <p>Join charity: water's mission to bring clean water to everyone. Register to start your journey!</p>
             </div>
-            <div class="player-form-fields">
-                <label for="player-name">Name:</label>
-                <input type="text" id="player-name" required placeholder="Your name">
-                <label for="player-email">Email:</label>
-                <input type="email" id="player-email" required placeholder="you@email.com">
-            </div>
-            <button type="submit" class="main-btn">Register / Login</button>
-        </form>
-        <a href="https://www.charitywater.org/" target="_blank" class="charity-link">🌊 Visit charity: water website</a>
-        
-        <!-- Difficulty Selection -->
-        <div class="difficulty-section">
-            <h3>Choose Your Difficulty</h3>
-            <div class="difficulty-buttons">
-                <button class="difficulty-btn active" data-difficulty="easy">
-                    <span class="difficulty-icon">🌱</span>
-                    <span class="difficulty-name">Easy</span>
-                    <span class="difficulty-desc">More time, lower targets</span>
-                </button>
-                <button class="difficulty-btn" data-difficulty="normal">
-                    <span class="difficulty-icon">💧</span>
-                    <span class="difficulty-name">Normal</span>
-                    <span class="difficulty-desc">Balanced challenge</span>
-                </button>
-                <button class="difficulty-btn" data-difficulty="hard">
-                    <span class="difficulty-icon">🏆</span>
-                    <span class="difficulty-name">Hard</span>
-                    <span class="difficulty-desc">Quick pace, high targets</span>
-                </button>
+            <div class="card">
+                <form id="player-form" class="player-form">
+                    <div class="player-form-header">
+                        <h2>Register to Play</h2>
+                        <p class="player-form-desc">Enter your name and email to save your progress and start playing!</p>
+                    </div>
+                    <div class="player-form-fields">
+                        <label for="player-name">Name:</label>
+                        <input type="text" id="player-name" required placeholder="Your name">
+                        <div class="form-error-message"></div>
+                        
+                        <label for="player-email">Email:</label>
+                        <input type="email" id="player-email" required placeholder="you@email.com">
+                        <div class="form-error-message"></div>
+                    </div>
+                    <button type="submit" class="main-btn">Start Playing</button>
+                </form>
             </div>
         </div>
-        
-        <div class="water-tank-container">
-            <div class="water-tank">
-                <div class="water-fill" id="water-fill"></div>
+
+        <!-- Main Hub Page -->
+        <div id="hub-page" class="page hub-page">
+            <div class="page-header">
+                <h2>Water Adventure Hub</h2>
+                <p>Choose your difficulty and start cleaning water!</p>
             </div>
-            <p id="progress-text">Progress: 0/6 games completed</p>
+            
+            <div class="card">
+                <div class="difficulty-section">
+                    <h3>Choose Your Difficulty</h3>
+                    <div class="difficulty-buttons">
+                        <button class="difficulty-btn active" data-difficulty="easy">
+                            <span class="difficulty-icon">🌱</span>
+                            <span class="difficulty-name">Easy</span>
+                            <span class="difficulty-desc">Target: 512, 3 levels</span>
+                        </button>
+                        <button class="difficulty-btn" data-difficulty="normal">
+                            <span class="difficulty-icon">💧</span>
+                            <span class="difficulty-name">Normal</span>
+                            <span class="difficulty-desc">Target: 1024, 4 levels</span>
+                        </button>
+                        <button class="difficulty-btn" data-difficulty="hard">
+                            <span class="difficulty-icon">🏆</span>
+                            <span class="difficulty-name">Hard</span>
+                            <span class="difficulty-desc">Target: 2048, 5 levels</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="water-tank-container">
+                    <div class="water-tank">
+                        <div class="water-fill" id="water-fill"></div>
+                    </div>
+                    <p id="progress-text">Progress: 0/6 games completed</p>
+                </div>
+                <div class="game-buttons">
+                    <button id="play-clear-flow" class="main-btn">🚰 Play Clear the Flow</button>
+                    <button id="play-puzzle-pipeline" class="main-btn">🔗 Play Puzzle Pipeline</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>About charity: water</h3>
+                <p>100% of public donations go directly to fund clean water projects worldwide.</p>
+                <a href="https://www.charitywater.org/" target="_blank" class="charity-link">🌊 Visit charity: water website</a>
+            </div>
         </div>
-        <div class="game-buttons">
-            <button id="play-clear-flow" class="main-btn">🚰 Play Clear the Flow</button>
-            <button id="play-puzzle-pipeline" class="main-btn">🔗 Play Puzzle Pipeline</button>
-            <div class="mobile-tip">
-                <small>💡 On mobile? Puzzle Pipeline supports touch controls - drag to connect!</small>
+
+        <!-- Clear the Flow Game Page -->
+        <div id="clear-flow-page" class="page game-page">
+            <div class="game-header">
+                <div class="game-info">
+                    <h2 class="game-title">🚰 Clear the Flow</h2>
+                    <p class="game-difficulty">Difficulty: <span id="cf-difficulty">Easy</span></p>
+                </div>
+                <div class="game-controls">
+                    <button id="cf-back" class="game-btn game-btn-secondary">← Back to Hub</button>
+                    <button id="cf-reset" class="game-btn game-btn-primary">Reset Game</button>
+                </div>
             </div>
-            <!-- Temporary testing button -->
-            <button id="test-celebration" class="main-btn" style="margin-top: 1rem; background: #FF902A;">🎉 Preview Completion Page</button>
+            
+            <div class="game-board-container">
+                <div class="game-status">
+                    <div class="score-display">Score: <span id="cf-score">0</span></div>
+                    <div class="level-display">Target: <span id="cf-target">512</span></div>
+                </div>
+                <div id="cf-board" class="cf-board"></div>
+                <div id="cf-message" class="game-message" style="display:none;"></div>
+            </div>
+            
+            <div class="game-instructions">
+                <h4>How to Play:</h4>
+                <p>Use arrow keys to move tiles. When two tiles with the same number touch, they merge into one!</p>
+            </div>
+        </div>
+
+        <!-- Puzzle Pipeline Game Page -->
+        <div id="puzzle-pipeline-page" class="page game-page">
+            <div class="game-header">
+                <div class="game-info">
+                    <h2 class="game-title">🔗 Puzzle Pipeline</h2>
+                    <p class="game-difficulty">Difficulty: <span id="pp-difficulty">Easy</span> | Level: <span id="pp-level">1</span></p>
+                </div>
+                <div class="game-controls">
+                    <button id="pp-back" class="game-btn game-btn-secondary">← Back to Hub</button>
+                    <button id="pp-reset" class="game-btn game-btn-primary">Reset Level</button>
+                </div>
+            </div>
+            
+            <div class="game-board-container">
+                <div id="pp-board" class="pp-board"></div>
+                <div id="pp-message" class="game-message" style="display:none;"></div>
+            </div>
+            
+            <div class="game-instructions">
+                <h4>How to Play:</h4>
+                <p>Click and drag to connect matching numbers. Fill the entire grid to complete the level!</p>
+            </div>
         </div>
     </main>
-    <section id="game-section" style="display:none;"></section>
-    <section id="celebration-section" style="display:none;"></section>
-    <section id="charity-info-section" style="display:none;">
-        <div class="charity-info">
-            <h2>About charity: water</h2>
-            <p>charity: water is a non-profit organization bringing clean and safe drinking water to people in developing countries.</p>
-            <ul>
-                <li>100% of public donations go directly to fund clean water projects.</li>
-                <li>They work with local partners to build sustainable, community-owned water projects.</li>
-                <li>Over 100,000 water projects funded, serving millions of people worldwide.</li>
-            </ul>
-            <a href="https://www.charitywater.org/donate" target="_blank" class="main-btn">Donate to charity: water</a>
-            <form id="subscribe-form" class="subscribe-form">
-                <label for="subscribe-email">Subscribe for updates:</label>
-                <input type="email" id="subscribe-email" required>
-                <button type="submit" class="main-btn">Subscribe</button>
-            </form>
-        </div>
-    </section>
     
     <!-- Enhanced Footer with charity: water branding -->
     <footer class="charity-footer">

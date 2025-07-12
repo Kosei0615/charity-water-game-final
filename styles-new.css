@@ -24,7 +24,7 @@
 
 body {
     font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #E3F2FD 0%, #81D4FA 50%, #2E9DF7 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     color: var(--text-dark);
     overflow-x: hidden;
@@ -165,38 +165,6 @@ main {
     transform: translateY(0);
 }
 
-/* Button Loading States */
-.main-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-    pointer-events: none;
-}
-
-.main-btn.loading {
-    position: relative;
-    color: transparent;
-}
-
-.main-btn.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    border: 2px solid transparent;
-    border-top: 2px solid white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: translate(-50%, -50%) rotate(0deg); }
-    100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
 /* Difficulty Section */
 .difficulty-section {
     text-align: center;
@@ -318,55 +286,32 @@ main {
 .cf-board {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(4, 1fr);
-    gap: 12px;
-    width: 400px;
-    height: 400px;
+    gap: 8px;
+    max-width: 400px;
     margin: 2rem auto;
     padding: 1rem;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 16px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .cf-cell {
+    aspect-ratio: 1;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 8px;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: bold;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border: 2px solid transparent;
-}
-
-.cf-cell:empty {
-    background: rgba(255, 255, 255, 0.4);
-    border: 2px dashed rgba(46, 157, 247, 0.3);
 }
 
 .cf-cell:not(:empty) {
     background: linear-gradient(135deg, var(--primary-blue), var(--accent-teal));
     color: white;
-    border: 2px solid var(--primary-blue);
-    box-shadow: 0 4px 16px rgba(46, 157, 247, 0.3);
+    transform: scale(1.05);
 }
-
-/* Different colors for different values */
-.cf-cell[data-value="2"] { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); color: var(--primary-blue); }
-.cf-cell[data-value="4"] { background: linear-gradient(135deg, #BBDEFB, #90CAF9); color: var(--primary-blue); }
-.cf-cell[data-value="8"] { background: linear-gradient(135deg, #90CAF9, #64B5F6); color: white; }
-.cf-cell[data-value="16"] { background: linear-gradient(135deg, #64B5F6, #42A5F5); color: white; }
-.cf-cell[data-value="32"] { background: linear-gradient(135deg, #42A5F5, #2196F3); color: white; }
-.cf-cell[data-value="64"] { background: linear-gradient(135deg, #2196F3, #1E88E5); color: white; }
-.cf-cell[data-value="128"] { background: linear-gradient(135deg, #1E88E5, #1976D2); color: white; }
-.cf-cell[data-value="256"] { background: linear-gradient(135deg, #1976D2, #FFC107); color: white; }
-.cf-cell[data-value="512"] { background: linear-gradient(135deg, #FFC107, #FF9800); color: white; }
-.cf-cell[data-value="1024"] { background: linear-gradient(135deg, #FF9800, #FF5722); color: white; }
-.cf-cell[data-value="2048"] { background: linear-gradient(135deg, #FF5722, #4CAF50); color: white; }
 
 /* Puzzle Pipeline Game Styles */
 .pp-board {
@@ -489,295 +434,6 @@ main {
 .charity-link:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-light);
-}
-
-/* Page Navigation with Smooth Transitions */
-.page {
-    display: none;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
-}
-
-.page.active {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-    animation: fadeInUp 0.5s ease forwards;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.page-header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.page-header h2 {
-    font-size: 2rem;
-    color: var(--primary-blue);
-    margin-bottom: 0.5rem;
-}
-
-.back-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid var(--primary-blue);
-    color: var(--primary-blue);
-    padding: 0.5rem 1rem;
-    border-radius: 25px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-bottom: 1rem;
-}
-
-.back-btn:hover {
-    background: var(--primary-blue);
-    color: white;
-}
-
-/* Register Page Specific */
-.register-page {
-    max-width: 500px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-.register-welcome {
-    text-align: center;
-    margin-bottom: 2rem;
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    padding: 2rem;
-    border: 1px solid var(--glass-border);
-}
-
-/* Main Hub Page */
-.hub-page {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 1rem;
-}
-
-/* Game Page */
-.game-page {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 1rem;
-}
-
-.game-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 1rem 1.5rem;
-    border: 1px solid var(--glass-border);
-}
-
-.game-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.game-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-blue);
-    margin: 0;
-}
-
-.game-difficulty {
-    font-size: 1rem;
-    color: var(--text-light);
-    margin: 0;
-}
-
-.game-controls {
-    display: flex;
-    gap: 1rem;
-}
-
-.game-btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 25px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.game-btn-primary {
-    background: linear-gradient(135deg, var(--primary-blue), var(--accent-teal));
-    color: white;
-}
-
-.game-btn-secondary {
-    background: rgba(255, 255, 255, 0.8);
-    color: var(--primary-blue);
-    border: 2px solid var(--primary-blue);
-}
-
-.game-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-light);
-}
-
-/* Game Board Container */
-.game-board-container {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    padding: 2rem;
-    border: 1px solid var(--glass-border);
-    margin-bottom: 2rem;
-}
-
-/* Score and Status */
-.game-status {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-}
-
-.score-display {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--primary-blue);
-}
-
-.level-display {
-    font-size: 1rem;
-    color: var(--text-light);
-}
-
-/* Game Messages */
-.game-message {
-    text-align: center;
-    margin: 1rem 0;
-    padding: 1rem;
-    border-radius: 12px;
-    font-weight: 600;
-}
-
-.game-message.success {
-    background: linear-gradient(135deg, var(--accent-green), var(--primary-blue));
-    color: white;
-}
-
-.game-message.info {
-    background: rgba(46, 157, 247, 0.1);
-    color: var(--primary-blue);
-    border: 1px solid var(--primary-blue);
-}
-
-/* Progress Indicator */
-.progress-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin: 1rem 0;
-}
-
-.progress-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: rgba(46, 157, 247, 0.3);
-    transition: all 0.3s ease;
-}
-
-.progress-dot.completed {
-    background: var(--accent-green);
-}
-
-.progress-dot.current {
-    background: var(--primary-blue);
-    transform: scale(1.2);
-}
-
-/* Celebration Overlay */
-.celebration-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(10px);
-}
-
-.celebration-content {
-    background: linear-gradient(135deg, var(--primary-blue), var(--primary-yellow));
-    color: white;
-    padding: 3rem;
-    border-radius: 20px;
-    text-align: center;
-    max-width: 500px;
-    margin: 1rem;
-    box-shadow: var(--shadow-heavy);
-    animation: celebrationPop 0.5s ease;
-}
-
-@keyframes celebrationPop {
-    0% {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.celebration-content h1 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-}
-
-.celebration-content h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    opacity: 0.9;
-}
-
-.celebration-content p {
-    font-size: 1.1rem;
-    margin-bottom: 2rem;
-    opacity: 0.8;
-}
-
-.celebration-content .main-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid white;
-    color: white;
-}
-
-.celebration-content .main-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
 }
 
 /* Responsive Design */
@@ -904,45 +560,4 @@ main {
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
     }
-}
-
-/* Enhanced form validation styles */
-.player-form-fields input.error {
-    border-color: var(--accent-red);
-    box-shadow: 0 0 0 3px rgba(245, 64, 44, 0.1);
-}
-
-.player-form-fields input.success {
-    border-color: var(--accent-green);
-    box-shadow: 0 0 0 3px rgba(79, 203, 83, 0.1);
-}
-
-.form-error-message {
-    color: var(--accent-red);
-    font-size: 0.875rem;
-    margin-top: 0.5rem;
-    display: none;
-}
-
-.form-error-message.show {
-    display: block;
-    animation: slideInDown 0.3s ease;
-}
-
-@keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Form shake animation for validation errors */
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-    20%, 40%, 60%, 80% { transform: translateX(5px); }
 }

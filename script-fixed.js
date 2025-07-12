@@ -1,44 +1,6 @@
 // Log a message to the console to ensure the script is linked correctly
 console.log('JavaScript file is linked correctly.');
 
-// Page navigation
-let currentPage = 'register-page';
-
-function showPage(pageId) {
-    // Start fade out animation for current page
-    const currentPageElement = document.querySelector('.page.active');
-    if (currentPageElement) {
-        currentPageElement.style.opacity = '0';
-        currentPageElement.style.transform = 'translateY(-20px)';
-    }
-    
-    // Wait for fade out, then switch pages
-    setTimeout(() => {
-        // Hide all pages
-        document.querySelectorAll('.page').forEach(page => {
-            page.classList.remove('active');
-            page.style.opacity = '0';
-            page.style.transform = 'translateY(20px)';
-        });
-        
-        // Show target page
-        const targetPage = document.getElementById(pageId);
-        if (targetPage) {
-            targetPage.classList.add('active');
-            currentPage = pageId;
-            
-            // Trigger reflow to ensure transition works
-            targetPage.offsetHeight;
-            
-            // Fade in new page
-            setTimeout(() => {
-                targetPage.style.opacity = '1';
-                targetPage.style.transform = 'translateY(0)';
-            }, 50);
-        }
-    }, 200);
-}
-
 // Difficulty system
 let currentDifficulty = 'easy';
 const difficultySettings = {
@@ -62,17 +24,20 @@ const difficultySettings = {
     }
 };
 
-// Milestone tracking system - reduced messages
+// Milestone tracking system
 const milestones = {
     clearFlow: [
-        { score: 512, message: "🌟 Easy mode completed!" },
-        { score: 1024, message: "🏆 Normal mode completed!" },
-        { score: 2048, message: "🎯 Hard mode completed!" }
+        { score: 64, message: "🌱 Great start! You're making progress!" },
+        { score: 128, message: "💧 Water is getting cleaner!" },
+        { score: 256, message: "🚀 Halfway there! Keep going!" },
+        { score: 512, message: "🌟 Amazing! You're almost there!" },
+        { score: 1024, message: "🏆 Outstanding! So close to victory!" }
     ],
     puzzlePipeline: [
-        { level: 3, message: "🔧 Easy levels completed!" },
-        { level: 4, message: "🌊 Normal levels completed!" },
-        { level: 5, message: "⚡ Hard levels completed!" }
+        { level: 1, message: "🔧 First connection made! Well done!" },
+        { level: 2, message: "🌊 Water is flowing! Keep connecting!" },
+        { level: 3, message: "⚡ You're getting the hang of this!" },
+        { level: 4, message: "🎯 Master connector! Almost complete!" }
     ]
 };
 
@@ -168,15 +133,14 @@ const progress = {
     puzzlePipeline: localStorage.getItem('cw_puzzlePipeline') === 'done'
 };
 
-// Initialize progress tracking
-function initializeProgress() {
-    const waterFill = document.getElementById('water-fill');
-    const progressText = document.getElementById('progress-text');
-    
-    if (waterFill && progressText) {
-        updateProgress();
-    }
-}
+// Get DOM elements
+const mainMenu = document.getElementById('main-menu');
+const gameSection = document.getElementById('game-section');
+const celebrationSection = document.getElementById('celebration-section');
+const waterFill = document.getElementById('water-fill');
+const progressText = document.getElementById('progress-text');
+const playClearFlowBtn = document.getElementById('play-clear-flow');
+const playPuzzlePipelineBtn = document.getElementById('play-puzzle-pipeline');
 
 // Simple sound system for game feedback
 const sounds = {
@@ -213,13 +177,6 @@ function playBeep(frequency, duration) {
 
 // Difficulty selection functionality
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize page system first
-    initializePageSystem();
-    
-    // Initialize form handlers (only once)
-    initializeFormHandlers();
-    
-    // Initialize difficulty system
     setTimeout(() => {
         const difficultyButtons = document.querySelectorAll('.difficulty-btn');
         if (difficultyButtons.length > 0) {
@@ -249,198 +206,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
 });
 
-// Initialize page system
-function initializePageSystem() {
-    // Always start with register page unless player is already registered
-    const savedName = localStorage.getItem('cw_player_name');
-    const savedEmail = localStorage.getItem('cw_player_email');
-    
-    if (savedName && savedEmail) {
-        // Player is already registered, go to hub
-        showPage('hub-page');
-    } else {
-        // Show registration page
-        showPage('register-page');
-    }
-}
-
-// Initialize form handlers (separate from page system to prevent duplicate listeners)
-function initializeFormHandlers() {
-    // Player form submission
-    const playerForm = document.getElementById('player-form');
-    if (playerForm) {
-        // Remove any existing listeners first
-        const newForm = playerForm.cloneNode(true);
-        playerForm.parentNode.replaceChild(newForm, playerForm);
-        
-        // Add error message containers if they don't exist
-        const nameField = newForm.querySelector('#player-name');
-        const emailField = newForm.querySelector('#player-email');
-        
-        if (!nameField.nextElementSibling || !nameField.nextElementSibling.classList.contains('form-error-message')) {
-            const nameError = document.createElement('div');
-            nameError.className = 'form-error-message';
-            nameField.parentNode.insertBefore(nameError, nameField.nextSibling);
-        }
-        
-        if (!emailField.nextElementSibling || !emailField.nextElementSibling.classList.contains('form-error-message')) {
-            const emailError = document.createElement('div');
-            emailError.className = 'form-error-message';
-            emailField.parentNode.insertBefore(emailError, emailField.nextSibling);
-        }
-        
-        // Real-time validation
-        nameField.addEventListener('input', validateName);
-        emailField.addEventListener('input', validateEmail);
-        nameField.addEventListener('blur', validateName);
-        emailField.addEventListener('blur', validateEmail);
-        
-        newForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const submitBtn = newForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            
-            // Validate all fields
-            const isNameValid = validateName();
-            const isEmailValid = validateEmail();
-            
-            if (!isNameValid || !isEmailValid) {
-                // Shake animation for invalid form
-                newForm.style.animation = 'shake 0.6s ease-in-out';
-                setTimeout(() => {
-                    newForm.style.animation = '';
-                }, 600);
-                return;
-            }
-            
-            // Add loading state
-            submitBtn.textContent = 'Registering...';
-            submitBtn.disabled = true;
-            submitBtn.classList.add('loading');
-            
-            const name = nameField.value.trim();
-            const email = emailField.value.trim();
-            
-            // Save to localStorage
-            localStorage.setItem('cw_player_name', name);
-            localStorage.setItem('cw_player_email', email);
-            
-            // Create welcome effect
-            domEffects.createWaterDrops(3);
-            sounds.click();
-            
-            // Smooth transition with delay
-            setTimeout(() => {
-                submitBtn.textContent = '✓ Welcome!';
-                submitBtn.style.background = 'linear-gradient(135deg, var(--accent-green), #4FCB53)';
-                
-                setTimeout(() => {
-                    showPage('hub-page');
-                    
-                    // Reset form for future use
-                    setTimeout(() => {
-                        submitBtn.textContent = originalText;
-                        submitBtn.disabled = false;
-                        submitBtn.classList.remove('loading');
-                        submitBtn.style.background = '';
-                        nameField.value = '';
-                        emailField.value = '';
-                        nameField.classList.remove('success', 'error');
-                        emailField.classList.remove('success', 'error');
-                    }, 1000);
-                }, 800);
-            }, 600);
-        });
-    }
-    
-    // Validation functions
-    function validateName() {
-        const nameField = document.getElementById('player-name');
-        const nameError = nameField.nextElementSibling;
-        const name = nameField.value.trim();
-        
-        if (!name) {
-            showFieldError(nameField, nameError, 'Name is required');
-            return false;
-        } else if (name.length < 2) {
-            showFieldError(nameField, nameError, 'Name must be at least 2 characters');
-            return false;
-        } else {
-            showFieldSuccess(nameField, nameError);
-            return true;
-        }
-    }
-    
-    function validateEmail() {
-        const emailField = document.getElementById('player-email');
-        const emailError = emailField.nextElementSibling;
-        const email = emailField.value.trim();
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
-        if (!email) {
-            showFieldError(emailField, emailError, 'Email is required');
-            return false;
-        } else if (!emailRegex.test(email)) {
-            showFieldError(emailField, emailError, 'Please enter a valid email address');
-            return false;
-        } else {
-            showFieldSuccess(emailField, emailError);
-            return true;
-        }
-    }
-    
-    function showFieldError(field, errorElement, message) {
-        field.classList.remove('success');
-        field.classList.add('error');
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.classList.add('show');
-        }
-    }
-    
-    function showFieldSuccess(field, errorElement) {
-        field.classList.remove('error');
-        field.classList.add('success');
-        if (errorElement) {
-            errorElement.classList.remove('show');
-        }
-    }
-    
-    // Game navigation buttons
-    const playButtons = {
-        'play-clear-flow': () => {
-            showPage('clear-flow-page');
-            startClearFlowGame();
-        },
-        'play-puzzle-pipeline': () => {
-            showPage('puzzle-pipeline-page');
-            startPuzzlePipelineGame();
-        }
-    };
-    
-    Object.entries(playButtons).forEach(([buttonId, handler]) => {
-        const button = document.getElementById(buttonId);
-        if (button) {
-            button.addEventListener('click', handler);
-        }
-    });
-    
-    // Back buttons
-    const backButtons = ['cf-back', 'pp-back'];
-    backButtons.forEach(buttonId => {
-        const button = document.getElementById(buttonId);
-        if (button) {
-            button.addEventListener('click', () => {
-                showPage('hub-page');
-            });
-        }
-    });
-    
-    // Initialize progress tracking
-    initializeProgress();
-}
-
 // Update difficulty display
 function updateDifficultyDisplay() {
     const settings = difficultySettings[currentDifficulty];
@@ -459,8 +224,7 @@ function checkMilestones(gameType, value) {
         const key = gameType === 'clearFlow' ? 'score' : 'level';
         const hasShown = shownMilestones[gameType].includes(milestone[key]);
         
-        // Only trigger on exact match, not just >= 
-        if (!hasShown && value === milestone[key]) {
+        if (!hasShown && value >= milestone[key]) {
             domEffects.showMilestone(milestone.message);
             domEffects.createCelebration();
             shownMilestones[gameType].push(milestone[key]);
@@ -470,62 +234,35 @@ function checkMilestones(gameType, value) {
 
 // Show main menu
 function showMainMenu() {
-    showPage('hub-page');
+    mainMenu.style.display = '';
+    gameSection.style.display = 'none';
+    celebrationSection.style.display = 'none';
     updateProgress();
 }
 
 // Show celebration screen
 function showCelebration() {
     sounds.complete();
-    showPage('hub-page');
-    
-    // Show celebration overlay
-    const celebrationOverlay = document.createElement('div');
-    celebrationOverlay.className = 'celebration-overlay';
-    celebrationOverlay.innerHTML = `
-        <div class="celebration-content">
-            <h1>🎉 Congratulations! 🎉</h1>
-            <h2>You've successfully cleaned the water tank!</h2>
-            <p>Thank you for helping charity: water's mission!</p>
-            <button class="main-btn" onclick="this.parentElement.parentElement.remove()">Continue</button>
+    mainMenu.style.display = 'none';
+    gameSection.style.display = 'none';
+    celebrationSection.style.display = '';
+    celebrationSection.innerHTML = `
+        <div class="celebration-page">
+            <div class="celebration-header">
+                <h1>🎉 Congratulations! 🎉</h1>
+                <h2>You've successfully cleaned the water tank!</h2>
+            </div>
+            <div class="game-controls">
+                <button class="main-btn" id="back-to-menu">🏠 Back to Menu</button>
+            </div>
         </div>
     `;
     
-    celebrationOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    `;
-    
-    celebrationOverlay.querySelector('.celebration-content').style.cssText = `
-        background: linear-gradient(135deg, #2E9DF7, #FFC907);
-        color: white;
-        padding: 3rem;
-        border-radius: 20px;
-        text-align: center;
-        max-width: 500px;
-        margin: 1rem;
-    `;
-    
-    document.body.appendChild(celebrationOverlay);
-    
-    updateProgress();
+    document.getElementById('back-to-menu').onclick = showMainMenu;
 }
 
 // Update progress
 function updateProgress() {
-    const waterFill = document.getElementById('water-fill');
-    const progressText = document.getElementById('progress-text');
-    
-    if (!waterFill || !progressText) return;
-    
     const completedGames = Object.values(progress).filter(Boolean).length;
     const totalGames = Object.keys(progress).length;
     const percentage = (completedGames / totalGames) * 100;
@@ -551,15 +288,38 @@ function markPuzzlePipelineComplete() {
     updateProgress();
 }
 
-// Clear the Flow Game (2048-style) - removed old inline HTML version
+// Clear the Flow Game (2048-style)
+playClearFlowBtn.onclick = () => {
+    sounds.click();
+    domEffects.createWaterDrops(2);
+    mainMenu.style.display = 'none';
+    gameSection.style.display = '';
+    celebrationSection.style.display = 'none';
+    
+    gameSection.innerHTML = `
+        <h2>🚰 Clear the Flow (${difficultySettings[currentDifficulty].name})</h2>
+        <div id="cf-score">Score: 0 | Target: ${difficultySettings[currentDifficulty].clearFlowTarget}</div>
+        <div class="cf-board" id="cf-board"></div>
+        <div class="cf-controls">
+            <button class="main-btn" id="cf-reset">Reset</button>
+            <button class="main-btn" id="back-menu-1">Back to Menu</button>
+        </div>
+        <div id="cf-message"></div>
+        <div class="game-instructions">
+            <strong>How to Play:</strong><br>
+            Use arrow keys to move tiles. When two tiles with the same number touch, they merge into one!<br>
+            Reach <strong>${difficultySettings[currentDifficulty].clearFlowTarget}</strong> to win!
+        </div>
+    `;
+    
+    startClearFlowGame();
+    document.getElementById('back-menu-1').onclick = showMainMenu;
+    document.getElementById('cf-reset').onclick = startClearFlowGame;
+};
 
 function startClearFlowGame() {
     // Reset milestones for this game session
     shownMilestones.clearFlow = [];
-    
-    // Update UI elements
-    document.getElementById('cf-difficulty').textContent = difficultySettings[currentDifficulty].name;
-    document.getElementById('cf-target').textContent = difficultySettings[currentDifficulty].clearFlowTarget;
     
     // 4x4 grid, filled with 0 (empty)
     let board = [
@@ -578,27 +338,10 @@ function startClearFlowGame() {
     addRandomTile();
     addRandomTile();
     updateBoard();
-    messageDiv.style.display = 'none';
+    messageDiv.textContent = '';
 
     // Listen for arrow keys
     document.addEventListener('keydown', handleKey);
-    
-    // Reset button
-    document.getElementById('cf-reset').onclick = () => {
-        board = [
-            [0,0,0,0],
-            [0,0,0,0],
-            [0,0,0,0],
-            [0,0,0,0]
-        ];
-        score = 0;
-        gameOver = false;
-        addRandomTile();
-        addRandomTile();
-        updateBoard();
-        messageDiv.style.display = 'none';
-        document.addEventListener('keydown', handleKey);
-    };
 
     function addRandomTile() {
         const empty = [];
@@ -614,13 +357,16 @@ function startClearFlowGame() {
     }
 
     function updateBoard() {
-        scoreDiv.textContent = score;
+        scoreDiv.textContent = `Score: ${score} | Target: ${difficultySettings[currentDifficulty].clearFlowTarget}`;
         boardDiv.innerHTML = '';
+        
+        // Check milestones
+        checkMilestones('clearFlow', score);
         
         for (let r = 0; r < 4; r++) {
             for (let c = 0; c < 4; c++) {
                 const tile = document.createElement('div');
-                tile.className = 'cf-cell';
+                tile.className = 'cf-tile';
                 tile.textContent = board[r][c] === 0 ? '' : board[r][c];
                 tile.setAttribute('data-value', board[r][c]);
                 
@@ -741,21 +487,10 @@ function startClearFlowGame() {
                 if (board[r][c] === winTarget) {
                     sounds.win();
                     domEffects.createCelebration();
-                    const difficultyName = difficultySettings[currentDifficulty].name.replace(' Mode', '');
-                    messageDiv.innerHTML = `🎉 Congratulations! You cleared ${difficultyName} difficulty!<br>Returning to main hub...`;
-                    messageDiv.className = 'game-message success';
-                    messageDiv.style.display = 'block';
+                    messageDiv.innerHTML = `<span class="cf-win">🎉 You filtered the water on ${difficultySettings[currentDifficulty].name}!<br>Click Back to Menu.</span>`;
                     document.removeEventListener('keydown', handleKey);
                     markClearFlowComplete();
                     gameOver = true;
-                    
-                    // Trigger milestone only on actual completion
-                    checkMilestones('clearFlow', winTarget);
-                    
-                    // Auto return to hub after 3 seconds
-                    setTimeout(() => {
-                        showPage('hub-page');
-                    }, 3000);
                     return;
                 }
             }
@@ -763,9 +498,7 @@ function startClearFlowGame() {
         
         // Check for game over
         if (!canMove()) {
-            messageDiv.innerHTML = 'No more moves! Try again.';
-            messageDiv.className = 'game-message info';
-            messageDiv.style.display = 'block';
+            messageDiv.innerHTML = '<span class="cf-lose">No more moves! Try again.</span>';
             document.removeEventListener('keydown', handleKey);
             gameOver = true;
         }
@@ -783,18 +516,40 @@ function startClearFlowGame() {
     }
 }
 
-// Puzzle Pipeline Game (Number linking game) - removed old inline HTML version
+// Puzzle Pipeline Game (Number linking game)
+playPuzzlePipelineBtn.onclick = () => {
+    sounds.click();
+    domEffects.createWaterDrops(2);
+    mainMenu.style.display = 'none';
+    gameSection.style.display = '';
+    celebrationSection.style.display = 'none';
+    
+    gameSection.innerHTML = `
+        <h2>🔗 Puzzle Pipeline (${difficultySettings[currentDifficulty].name})</h2>
+        <div id="pp-level">Level 1</div>
+        <div class="pp-board" id="pp-board"></div>
+        <div class="pp-controls">
+            <button class="main-btn" id="pp-reset">Reset Level</button>
+            <button class="main-btn" id="back-menu-2">Back to Menu</button>
+        </div>
+        <div id="pp-message"></div>
+        <div class="game-instructions">
+            <strong>How to Play:</strong><br>
+            Connect matching numbers by clicking and dragging to create paths. Fill the entire grid to win!<br>
+            Paths cannot cross each other.
+        </div>
+    `;
+    
+    startPuzzlePipelineGame();
+    document.getElementById('back-menu-2').onclick = showMainMenu;
+};
 
 function startPuzzlePipelineGame() {
     let currentLevel = 0;
     const maxLevels = difficultySettings[currentDifficulty].puzzleLevels;
-    let isDrawing = false;
     
     // Reset milestones for this game session
     shownMilestones.puzzlePipeline = [];
-    
-    // Update UI
-    document.getElementById('pp-difficulty').textContent = difficultySettings[currentDifficulty].name;
     
     const levels = [
         {
@@ -839,8 +594,8 @@ function startPuzzlePipelineGame() {
             grid: [
                 [1, 0, 0, 2, 0, 0],
                 [0, 0, 0, 0, 0, 0],
-                [0, 3, 0, 0, 4, 0],
-                [0, 1, 0, 0, 0, 0],
+                [0, 3, 0, 0, 0, 0],
+                [0, 1, 0, 0, 0, 4],
                 [0, 4, 2, 0, 0, 0],
                 [3, 0, 0, 0, 0, 0]
             ],
@@ -853,22 +608,12 @@ function startPuzzlePipelineGame() {
             // All levels completed
             sounds.complete();
             domEffects.createCelebration();
-            const messageDiv = document.getElementById('pp-message');
-            messageDiv.innerHTML = `🎉 All levels completed on ${difficultySettings[currentDifficulty].name}!`;
-            messageDiv.className = 'game-message success';
-            messageDiv.style.display = 'block';
+            document.getElementById('pp-message').innerHTML = 
+                `<span class="pp-win">🎉 All levels completed on ${difficultySettings[currentDifficulty].name}!</span>`;
             markPuzzlePipelineComplete();
-            
-            // Auto return to hub after 3 seconds
-            setTimeout(() => {
-                showPage('hub-page');
-            }, 3000);
             return;
         }
 
-        // Update level display
-        document.getElementById('pp-level').textContent = levelIndex + 1;
-        
         const level = levels[levelIndex];
         const size = level.size;
         const grid = [...level.grid.map(row => [...row])]; // Deep copy
@@ -911,11 +656,8 @@ function startPuzzlePipelineGame() {
                     if (grid[r][c] > 0) {
                         cell.textContent = grid[r][c];
                         cell.classList.add('pp-endpoint');
-                        cell.style.backgroundColor = getColor(grid[r][c]);
-                        cell.style.color = '#fff';
-                        cell.style.fontWeight = 'bold';
                     } else {
-                        // Check if this cell is part of a completed path
+                        // Check if this cell is part of a path
                         let inPath = false;
                         for (let num in paths) {
                             if (paths[num].some(([pr, pc]) => pr === r && pc === c)) {
@@ -925,20 +667,10 @@ function startPuzzlePipelineGame() {
                                 break;
                             }
                         }
-                        
-                        // Check if this cell is part of the current path being drawn
-                        if (!inPath && currentPath && currentPath.path.some(([pr, pc]) => pr === r && pc === c)) {
-                            cell.style.backgroundColor = getColor(currentPath.number);
-                            cell.style.opacity = '0.7';
-                            cell.classList.add('pp-current-path');
-                            inPath = true;
-                        }
-                        
                         if (!inPath) {
                             cell.textContent = '';
                             cell.style.backgroundColor = '';
-                            cell.style.opacity = '';
-                            cell.classList.remove('pp-path', 'pp-current-path');
+                            cell.classList.remove('pp-path');
                         }
                     }
                     
@@ -946,28 +678,13 @@ function startPuzzlePipelineGame() {
                     cell.addEventListener('mouseenter', continuePath);
                     cell.addEventListener('mouseup', endPath);
                     
-                    // Touch events for mobile
-                    cell.addEventListener('touchstart', startPath);
-                    cell.addEventListener('touchmove', handleTouchMove);
-                    cell.addEventListener('touchend', endPath);
-                    
                     boardDiv.appendChild(cell);
                 }
             }
-            
-            // Global mouse up to stop drawing when mouse leaves the board
-            document.addEventListener('mouseup', () => {
-                if (isDrawing) {
-                    isDrawing = false;
-                    currentPath = null;
-                    drawBoard();
-                }
-            });
         }
 
         function startPath(e) {
             if (solved) return;
-            e.preventDefault();
             
             const r = parseInt(e.target.dataset.row);
             const c = parseInt(e.target.dataset.col);
@@ -975,15 +692,12 @@ function startPuzzlePipelineGame() {
             if (grid[r][c] > 0) {
                 const num = grid[r][c];
                 currentPath = { number: num, path: [[r, c]] };
-                isDrawing = true;
                 sounds.click();
-                drawBoard(); // Redraw to show current path
             }
         }
 
         function continuePath(e) {
-            if (!currentPath || solved || !isDrawing) return;
-            e.preventDefault();
+            if (!currentPath || solved) return;
             
             const r = parseInt(e.target.dataset.row);
             const c = parseInt(e.target.dataset.col);
@@ -998,35 +712,6 @@ function startPuzzlePipelineGame() {
                     if (!currentPath.path.some(([pr, pc]) => pr === r && pc === c)) {
                         currentPath.path.push([r, c]);
                         sounds.connect();
-                        drawBoard(); // Redraw to show updated path
-                    }
-                }
-            }
-        }
-
-        function handleTouchMove(e) {
-            if (!currentPath || solved || !isDrawing) return;
-            e.preventDefault();
-            
-            const touch = e.touches[0];
-            const element = document.elementFromPoint(touch.clientX, touch.clientY);
-            
-            if (element && element.dataset && element.dataset.row !== undefined) {
-                const r = parseInt(element.dataset.row);
-                const c = parseInt(element.dataset.col);
-                
-                // Check if this is a valid next cell
-                const lastPos = currentPath.path[currentPath.path.length - 1];
-                const distance = Math.abs(r - lastPos[0]) + Math.abs(c - lastPos[1]);
-                
-                if (distance === 1) { // Adjacent cell
-                    if (grid[r][c] === 0 || grid[r][c] === currentPath.number) {
-                        // Check if not already in current path
-                        if (!currentPath.path.some(([pr, pc]) => pr === r && pc === c)) {
-                            currentPath.path.push([r, c]);
-                            sounds.connect();
-                            drawBoard(); // Redraw to show updated path
-                        }
                     }
                 }
             }
@@ -1034,8 +719,6 @@ function startPuzzlePipelineGame() {
 
         function endPath(e) {
             if (!currentPath || solved) return;
-            e.preventDefault();
-            isDrawing = false;
             
             const r = parseInt(e.target.dataset.row);
             const c = parseInt(e.target.dataset.col);
@@ -1055,8 +738,7 @@ function startPuzzlePipelineGame() {
                         
                         paths[currentPath.number] = currentPath.path;
                         sounds.complete();
-                        // Removed checkMilestones here - only check on full level completion
-                    }
+                        checkMilestones('puzzlePipeline', levelIndex + 1);
                     }
                 }
             }
@@ -1088,34 +770,18 @@ function startPuzzlePipelineGame() {
             if (filledCells === size * size && Object.keys(paths).length === Object.keys(endpoints).length) {
                 solved = true;
                 sounds.win();
-                
-                // Check milestones only on complete level finish
-                if (levelIndex + 1 === maxLevels) {
-                    checkMilestones('puzzlePipeline', maxLevels);
-                }
+                domEffects.createCelebration();
                 
                 if (levelIndex === maxLevels - 1) {
-                    // All levels completed
-                    const messageDiv = document.getElementById('pp-message');
-                    messageDiv.innerHTML = `🎉 Congratulations! You cleared Puzzle Pipeline!<br>Returning to main hub...`;
-                    messageDiv.className = 'game-message success';
-                    messageDiv.style.display = 'block';
-                    
+                    messageDiv.innerHTML = `<span class="pp-win">🎉 All levels completed on ${difficultySettings[currentDifficulty].name}!</span>`;
                     setTimeout(() => {
                         markPuzzlePipelineComplete();
-                        showPage('hub-page');
-                    }, 3000);
+                        showMainMenu();
+                    }, 2000);
                 } else {
-                    // Level completed, show message and auto-advance to next level
-                    const messageDiv = document.getElementById('pp-message');
-                    messageDiv.innerHTML = `💧 Level ${levelIndex + 1} complete! Moving to level ${levelIndex + 2}...`;
-                    messageDiv.className = 'game-message success';
-                    messageDiv.style.display = 'block';
-                    
-                    // Increment currentLevel and load the next level
-                    currentLevel = levelIndex + 1;
+                    messageDiv.innerHTML = `<span class="pp-win">🎉 Level ${levelIndex + 1} completed!</span>`;
                     setTimeout(() => {
-                        messageDiv.style.display = 'none';
+                        currentLevel++;
                         loadLevel(currentLevel);
                     }, 1500);
                 }
@@ -1132,23 +798,13 @@ function startPuzzlePipelineGame() {
             paths = {};
             currentPath = null;
             solved = false;
-            isDrawing = false;
             drawBoard();
-            const messageDiv = document.getElementById('pp-message');
-            messageDiv.style.display = 'none';
-            sounds.click();
+            messageDiv.textContent = '';
         };
     }
 
     loadLevel(currentLevel);
 }
 
-// Add logout function for testing
-function clearRegistration() {
-    localStorage.removeItem('cw_player_name');
-    localStorage.removeItem('cw_player_email');
-    showPage('register-page');
-}
-
-// Add this to window for testing in console
-window.clearRegistration = clearRegistration;
+// Initialize the game
+updateProgress();
