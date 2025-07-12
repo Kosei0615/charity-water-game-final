@@ -1,42 +1,43 @@
 // Log a message to the console to ensure the script is linked correctly
 console.log('JavaScript file is linked correctly.');
 
+// Utility functions - must be defined early
+function isPlayerRegistered() {
+    const savedName = localStorage.getItem('cw_player_name');
+    const savedEmail = localStorage.getItem('cw_player_email');
+    
+    console.log('Checking registration status:');
+    console.log('- Name:', savedName);
+    console.log('- Email:', savedEmail);
+    
+    const isRegistered = savedName && savedEmail && 
+           savedName.trim() !== '' && savedEmail.trim() !== '' &&
+           savedName.trim() !== 'null' && savedEmail.trim() !== 'null';
+    
+    console.log('- Is registered:', isRegistered);
+    return isRegistered;
+}
+
 // Page navigation
 let currentPage = 'register-page';
 
 function showPage(pageId) {
-    // Start fade out animation for current page
-    const currentPageElement = document.querySelector('.page.active');
-    if (currentPageElement) {
-        currentPageElement.style.opacity = '0';
-        currentPageElement.style.transform = 'translateY(-20px)';
-    }
+    console.log('Switching to page:', pageId);
     
-    // Wait for fade out, then switch pages
-    setTimeout(() => {
-        // Hide all pages
-        document.querySelectorAll('.page').forEach(page => {
-            page.classList.remove('active');
-            page.style.opacity = '0';
-            page.style.transform = 'translateY(20px)';
-        });
-        
-        // Show target page
-        const targetPage = document.getElementById(pageId);
-        if (targetPage) {
-            targetPage.classList.add('active');
-            currentPage = pageId;
-            
-            // Trigger reflow to ensure transition works
-            targetPage.offsetHeight;
-            
-            // Fade in new page
-            setTimeout(() => {
-                targetPage.style.opacity = '1';
-                targetPage.style.transform = 'translateY(0)';
-            }, 50);
-        }
-    }, 200);
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    // Show target page
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) {
+        targetPage.classList.add('active');
+        currentPage = pageId;
+        console.log('Successfully switched to:', pageId);
+    } else {
+        console.error('Page not found:', pageId);
+    }
 }
 
 // Difficulty system
@@ -60,26 +61,6 @@ const difficultySettings = {
         name: 'Hard Mode',
         color: '#F5402C'
     }
-};
-
-// Milestone tracking system - reduced messages
-const milestones = {
-    clearFlow: [
-        { score: 512, message: "🌟 Easy mode completed!" },
-        { score: 1024, message: "🏆 Normal mode completed!" },
-        { score: 2048, message: "🎯 Hard mode completed!" }
-    ],
-    puzzlePipeline: [
-        { level: 3, message: "🔧 Easy levels completed!" },
-        { level: 4, message: "🌊 Normal levels completed!" },
-        { level: 5, message: "⚡ Hard levels completed!" }
-    ]
-};
-
-// Track shown milestones to avoid repetition
-let shownMilestones = {
-    clearFlow: [],
-    puzzlePipeline: []
 };
 
 // DOM manipulation effects
@@ -121,7 +102,7 @@ const domEffects = {
                 z-index: 1000;
                 left: ${Math.random() * window.innerWidth}px;
                 top: ${Math.random() * window.innerHeight}px;
-                animation: celebrationPop 2s ease-out forwards;
+                animation: celebrate 2s ease-out forwards;
             `;
             document.body.appendChild(particle);
             
@@ -131,289 +112,347 @@ const domEffects = {
                 }
             }, 2000);
         }
+    }
+};
+
+// Simple sound system
+const sounds = {
+    audioContext: null,
+    init: function() {
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.log('Web Audio API not supported');
+        }
     },
     
-    showMilestone: function(message) {
-        const milestone = document.createElement('div');
-        milestone.className = 'milestone-popup';
-        milestone.innerHTML = message;
-        milestone.style.cssText = `
-            position: fixed;
-            top: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #FFC907 0%, #2E9DF7 100%);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(46,157,247,0.3);
-            animation: milestoneAppear 3s ease-out forwards;
-        `;
-        document.body.appendChild(milestone);
+    click: function() {
+        if (!this.audioContext) return;
         
-        setTimeout(() => {
-            if (milestone.parentNode) {
-                milestone.parentNode.removeChild(milestone);
-            }
-        }, 3000);
-    }
-};
-
-// Track progress in localStorage
-const progress = {
-    clearFlow: localStorage.getItem('cw_clearFlow') === 'done',
-    puzzlePipeline: localStorage.getItem('cw_puzzlePipeline') === 'done'
-};
-
-// Initialize progress tracking
-function initializeProgress() {
-    const waterFill = document.getElementById('water-fill');
-    const progressText = document.getElementById('progress-text');
+        try {
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+            
+            oscillator.start(this.audioContext.currentTime);
+            oscillator.stop(this.audioContext.currentTime + 0.1);
+        } catch (e) {
+            console.log('Sound error:', e);
+        }
+    },
     
-    if (waterFill && progressText) {
-        updateProgress();
+    success: function() {
+        if (!this.audioContext) return;
+        
+        try {
+            const notes = [523, 659, 784, 1047]; // C, E, G, C
+            notes.forEach((freq, index) => {
+                setTimeout(() => {
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+                    
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
+                    
+                    oscillator.start(this.audioContext.currentTime);
+                    oscillator.stop(this.audioContext.currentTime + 0.2);
+                }, index * 100);
+            });
+        } catch (e) {
+            console.log('Sound error:', e);
+        }
     }
-}
-
-// Simple sound system for game feedback
-const sounds = {
-    move: () => playBeep(220, 100),
-    merge: () => playBeep(440, 200),
-    win: () => playBeep(880, 500),
-    click: () => playBeep(330, 80),
-    connect: () => playBeep(550, 150),
-    complete: () => playBeep(660, 300)
 };
 
-// Helper function to create beep sounds
-function playBeep(frequency, duration) {
-    try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = frequency;
-        oscillator.type = 'sine';
-        
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + duration / 1000);
-    } catch (e) {
-        console.log('Audio not supported');
-    }
-}
-
-// Difficulty selection functionality
+// Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize page system first
+    console.log('DOM loaded, initializing...');
+    
+    // DEBUG: Show current localStorage state
+    console.log('Current localStorage state:');
+    console.log('- cw_player_name:', localStorage.getItem('cw_player_name'));
+    console.log('- cw_player_email:', localStorage.getItem('cw_player_email'));
+    
+    // Initialize sounds first
+    sounds.init();
+    
+    // Initialize page system - this determines initial page
     initializePageSystem();
     
-    // Initialize form handlers (only once)
-    initializeFormHandlers();
-    
-    // Initialize difficulty system
+    // Initialize all other systems
     setTimeout(() => {
-        const difficultyButtons = document.querySelectorAll('.difficulty-btn');
-        if (difficultyButtons.length > 0) {
-            difficultyButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    difficultyButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    currentDifficulty = button.dataset.difficulty;
-                    localStorage.setItem('cw_difficulty', currentDifficulty);
-                    
-                    sounds.click();
-                    domEffects.createWaterDrops(2);
-                    updateDifficultyDisplay();
-                });
-            });
-            
-            const savedDifficulty = localStorage.getItem('cw_difficulty');
-            if (savedDifficulty && difficultySettings[savedDifficulty]) {
-                currentDifficulty = savedDifficulty;
-                difficultyButtons.forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.difficulty === currentDifficulty);
-                });
-            }
-            
-            updateDifficultyDisplay();
-        }
+        initializeFormHandlers();
+        initializeDifficultySystem();
+        initializeGameButtons();
+        initializeBackButtons();
+        initializeResetButtons();
+        updateProgress();
     }, 100);
 });
 
-// Initialize page system
+// Initialize page system - ENFORCED authentication required
 function initializePageSystem() {
-    // Always start with register page unless player is already registered
+    console.log('Initializing page system...');
+    
+    // ALWAYS clear all pages first to ensure clean state
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    // Check if player is already registered
     const savedName = localStorage.getItem('cw_player_name');
     const savedEmail = localStorage.getItem('cw_player_email');
     
-    if (savedName && savedEmail) {
+    console.log('Saved name:', savedName);
+    console.log('Saved email:', savedEmail);
+    
+    // Update debug info
+    const debugDiv = document.getElementById('debug-registration');
+    if (debugDiv) {
+        debugDiv.innerHTML = `
+            <strong>Registration Debug:</strong><br>
+            Name: ${savedName || 'null'}<br>
+            Email: ${savedEmail || 'null'}<br>
+            Status: ${isPlayerRegistered() ? 'REGISTERED' : 'NOT REGISTERED'}
+        `;
+    }
+    
+    // STRICT authentication check - both name and email must exist and be non-empty
+    if (savedName && savedEmail && 
+        savedName.trim() !== '' && savedEmail.trim() !== '' &&
+        savedName.trim() !== 'null' && savedEmail.trim() !== 'null') {
         // Player is already registered, go to hub
+        console.log('Player already registered, going to hub');
         showPage('hub-page');
+        // Enable game buttons since user is registered
+        enableGameButtons();
     } else {
-        // Show registration page
+        // Show registration page - ENFORCE registration
+        console.log('No valid registration found, showing register page');
+        localStorage.removeItem('cw_player_name'); // Clear any invalid data
+        localStorage.removeItem('cw_player_email');
         showPage('register-page');
+        // Ensure game buttons are disabled
+        disableGameButtons();
     }
 }
 
-// Initialize form handlers (separate from page system to prevent duplicate listeners)
+// Enable/disable game buttons based on authentication
+function enableGameButtons() {
+    const buttons = ['play-clear-flow', 'play-puzzle-pipeline'];
+    buttons.forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            button.disabled = false;
+            button.style.opacity = '1';
+            button.style.cursor = 'pointer';
+        }
+    });
+}
+
+function disableGameButtons() {
+    const buttons = ['play-clear-flow', 'play-puzzle-pipeline'];
+    buttons.forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            button.disabled = true;
+            button.style.opacity = '0.5';
+            button.style.cursor = 'not-allowed';
+        }
+    });
+}
+
+// Initialize form handlers - FIXED to ensure proper redirect
 function initializeFormHandlers() {
-    // Player form submission
+    console.log('Initializing form handlers...');
+    
     const playerForm = document.getElementById('player-form');
-    if (playerForm) {
-        // Remove any existing listeners first
-        const newForm = playerForm.cloneNode(true);
-        playerForm.parentNode.replaceChild(newForm, playerForm);
+    if (!playerForm) {
+        console.error('Player form not found!');
+        return;
+    }
+    
+    console.log('Player form found, adding event listener');
+    
+    playerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        console.log('Form submitted');
         
-        // Add error message containers if they don't exist
-        const nameField = newForm.querySelector('#player-name');
-        const emailField = newForm.querySelector('#player-email');
+        const submitBtn = playerForm.querySelector('button[type="submit"]');
+        const nameField = document.getElementById('player-name');
+        const emailField = document.getElementById('player-email');
+        const originalText = submitBtn.textContent;
         
-        if (!nameField.nextElementSibling || !nameField.nextElementSibling.classList.contains('form-error-message')) {
-            const nameError = document.createElement('div');
-            nameError.className = 'form-error-message';
-            nameField.parentNode.insertBefore(nameError, nameField.nextSibling);
+        const name = nameField.value.trim();
+        const email = emailField.value.trim();
+        
+        console.log('Form data:', { name, email });
+        
+        // Simple validation
+        if (!name) {
+            alert('Please enter your name');
+            nameField.focus();
+            return;
         }
         
-        if (!emailField.nextElementSibling || !emailField.nextElementSibling.classList.contains('form-error-message')) {
-            const emailError = document.createElement('div');
-            emailError.className = 'form-error-message';
-            emailField.parentNode.insertBefore(emailError, emailField.nextSibling);
+        if (name.length < 2) {
+            alert('Name must be at least 2 characters');
+            nameField.focus();
+            return;
         }
         
-        // Real-time validation
-        nameField.addEventListener('input', validateName);
-        emailField.addEventListener('input', validateEmail);
-        nameField.addEventListener('blur', validateName);
-        emailField.addEventListener('blur', validateEmail);
+        if (!email) {
+            alert('Please enter your email');
+            emailField.focus();
+            return;
+        }
         
-        newForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const submitBtn = newForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            
-            // Validate all fields
-            const isNameValid = validateName();
-            const isEmailValid = validateEmail();
-            
-            if (!isNameValid || !isEmailValid) {
-                // Shake animation for invalid form
-                newForm.style.animation = 'shake 0.6s ease-in-out';
-                setTimeout(() => {
-                    newForm.style.animation = '';
-                }, 600);
-                return;
-            }
-            
-            // Add loading state
-            submitBtn.textContent = 'Registering...';
-            submitBtn.disabled = true;
-            submitBtn.classList.add('loading');
-            
-            const name = nameField.value.trim();
-            const email = emailField.value.trim();
-            
-            // Save to localStorage
+        // Simple email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Please enter a valid email address');
+            emailField.focus();
+            return;
+        }
+        
+        console.log('Validation passed, proceeding with registration');
+        
+        // Add loading state
+        submitBtn.textContent = 'Registering...';
+        submitBtn.disabled = true;
+        
+        // Save to localStorage - ENSURE this happens
+        try {
             localStorage.setItem('cw_player_name', name);
             localStorage.setItem('cw_player_email', email);
+            console.log('Data saved to localStorage:', {
+                name: localStorage.getItem('cw_player_name'),
+                email: localStorage.getItem('cw_player_email')
+            });
+        } catch (e) {
+            console.error('Error saving to localStorage:', e);
+            alert('Error saving your data. Please try again.');
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+        
+        // Create welcome effect
+        domEffects.createWaterDrops(3);
+        sounds.click();
+        
+        // Success feedback and redirect - FIXED timing and redirect
+        setTimeout(() => {
+            submitBtn.textContent = '✓ Welcome!';
+            submitBtn.style.background = 'linear-gradient(135deg, #4FCB53, #4FCB53)';
+            console.log('Redirecting to hub page...');
             
-            // Create welcome effect
-            domEffects.createWaterDrops(3);
-            sounds.click();
-            
-            // Smooth transition with delay
             setTimeout(() => {
-                submitBtn.textContent = '✓ Welcome!';
-                submitBtn.style.background = 'linear-gradient(135deg, var(--accent-green), #4FCB53)';
+                // Force redirect to hub page
+                showPage('hub-page');
+                // Enable game buttons since user is now registered
+                enableGameButtons();
                 
+                // Reset form after successful registration
                 setTimeout(() => {
-                    showPage('hub-page');
-                    
-                    // Reset form for future use
-                    setTimeout(() => {
-                        submitBtn.textContent = originalText;
-                        submitBtn.disabled = false;
-                        submitBtn.classList.remove('loading');
-                        submitBtn.style.background = '';
-                        nameField.value = '';
-                        emailField.value = '';
-                        nameField.classList.remove('success', 'error');
-                        emailField.classList.remove('success', 'error');
-                    }, 1000);
-                }, 800);
-            }, 600);
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                    submitBtn.style.background = '';
+                    nameField.value = '';
+                    emailField.value = '';
+                }, 500);
+            }, 1000); // Increased delay to ensure user sees success message
+        }, 500);
+    });
+    
+    // Add clear data button handler
+    const clearDataBtn = document.getElementById('clear-data-btn');
+    if (clearDataBtn) {
+        clearDataBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all saved data? This will reset your progress.')) {
+                localStorage.removeItem('cw_player_name');
+                localStorage.removeItem('cw_player_email');
+                localStorage.removeItem('cw_clear_flow_completed');
+                localStorage.removeItem('cw_puzzle_completed');
+                alert('All data cleared! You can now register again.');
+                showPage('register-page');
+                disableGameButtons();
+            }
         });
     }
     
-    // Validation functions
-    function validateName() {
-        const nameField = document.getElementById('player-name');
-        const nameError = nameField.nextElementSibling;
-        const name = nameField.value.trim();
-        
-        if (!name) {
-            showFieldError(nameField, nameError, 'Name is required');
-            return false;
-        } else if (name.length < 2) {
-            showFieldError(nameField, nameError, 'Name must be at least 2 characters');
-            return false;
-        } else {
-            showFieldSuccess(nameField, nameError);
-            return true;
-        }
+    // Add test authentication button handler
+    const testAuthBtn = document.getElementById('test-auth-btn');
+    if (testAuthBtn) {
+        testAuthBtn.addEventListener('click', () => {
+            const isRegistered = isPlayerRegistered();
+            alert(`Authentication Status: ${isRegistered ? 'REGISTERED' : 'NOT REGISTERED'}\n\nName: ${localStorage.getItem('cw_player_name') || 'None'}\nEmail: ${localStorage.getItem('cw_player_email') || 'None'}`);
+        });
     }
-    
-    function validateEmail() {
-        const emailField = document.getElementById('player-email');
-        const emailError = emailField.nextElementSibling;
-        const email = emailField.value.trim();
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
-        if (!email) {
-            showFieldError(emailField, emailError, 'Email is required');
-            return false;
-        } else if (!emailRegex.test(email)) {
-            showFieldError(emailField, emailError, 'Please enter a valid email address');
-            return false;
-        } else {
-            showFieldSuccess(emailField, emailError);
-            return true;
-        }
+}
+
+// Initialize difficulty system
+function initializeDifficultySystem() {
+    const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+    if (difficultyButtons.length > 0) {
+        difficultyButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                difficultyButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Add active class to clicked button
+                button.classList.add('active');
+                
+                // Update current difficulty
+                currentDifficulty = button.dataset.difficulty;
+                
+                // Update target displays
+                updateDifficultyDisplays();
+                
+                sounds.click();
+            });
+        });
     }
+}
+
+// Initialize game buttons with authentication guards
+function initializeGameButtons() {
+    console.log('Initializing game buttons with authentication guards...');
     
-    function showFieldError(field, errorElement, message) {
-        field.classList.remove('success');
-        field.classList.add('error');
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.classList.add('show');
-        }
-    }
-    
-    function showFieldSuccess(field, errorElement) {
-        field.classList.remove('error');
-        field.classList.add('success');
-        if (errorElement) {
-            errorElement.classList.remove('show');
-        }
-    }
-    
-    // Game navigation buttons
     const playButtons = {
         'play-clear-flow': () => {
+            console.log('Clear Flow button clicked - checking authentication...');
+            if (!isPlayerRegistered()) {
+                console.log('Player not registered, blocking game access');
+                alert('Please register first to play the game!');
+                showPage('register-page');
+                return;
+            }
+            console.log('Player authenticated, starting Clear Flow game');
             showPage('clear-flow-page');
             startClearFlowGame();
         },
         'play-puzzle-pipeline': () => {
+            console.log('Puzzle Pipeline button clicked - checking authentication...');
+            if (!isPlayerRegistered()) {
+                console.log('Player not registered, blocking game access');
+                alert('Please register first to play the game!');
+                showPage('register-page');
+                return;
+            }
+            console.log('Player authenticated, starting Puzzle Pipeline game');
             showPage('puzzle-pipeline-page');
             startPuzzlePipelineGame();
         }
@@ -422,380 +461,383 @@ function initializeFormHandlers() {
     Object.entries(playButtons).forEach(([buttonId, handler]) => {
         const button = document.getElementById(buttonId);
         if (button) {
-            button.addEventListener('click', handler);
+            button.addEventListener('click', () => {
+                console.log('Game button clicked:', buttonId);
+                handler();
+            });
         }
     });
-    
-    // Back buttons
+}
+
+// Initialize back buttons with authentication guards
+function initializeBackButtons() {
     const backButtons = ['cf-back', 'pp-back'];
     backButtons.forEach(buttonId => {
         const button = document.getElementById(buttonId);
         if (button) {
             button.addEventListener('click', () => {
+                console.log('Back button clicked:', buttonId);
+                if (!isPlayerRegistered()) {
+                    alert('Please register first!');
+                    showPage('register-page');
+                    return;
+                }
                 showPage('hub-page');
+                sounds.click();
             });
         }
     });
-    
-    // Initialize progress tracking
-    initializeProgress();
 }
 
-// Update difficulty display
-function updateDifficultyDisplay() {
-    const settings = difficultySettings[currentDifficulty];
-    const difficultyInfo = document.querySelector('.difficulty-section h3');
-    if (difficultyInfo) {
-        difficultyInfo.innerHTML = `Choose Your Difficulty - Current: <span style="color: ${settings.color}">${settings.name}</span>`;
+// Initialize reset buttons
+function initializeResetButtons() {
+    const cfResetBtn = document.getElementById('cf-reset');
+    if (cfResetBtn) {
+        cfResetBtn.addEventListener('click', () => {
+            console.log('Clear Flow reset clicked');
+            startClearFlowGame();
+            sounds.click();
+        });
+    }
+    
+    const ppResetBtn = document.getElementById('pp-reset');
+    if (ppResetBtn) {
+        ppResetBtn.addEventListener('click', () => {
+            console.log('Puzzle Pipeline reset clicked');
+            // Restart the entire puzzle pipeline game from level 1
+            startPuzzlePipelineGame();
+            sounds.click();
+        });
     }
 }
 
-// Check and show milestones
-function checkMilestones(gameType, value) {
-    const milestonesForGame = milestones[gameType];
-    if (!milestonesForGame) return;
+// Update difficulty displays
+function updateDifficultyDisplays() {
+    const setting = difficultySettings[currentDifficulty];
     
-    milestonesForGame.forEach(milestone => {
-        const key = gameType === 'clearFlow' ? 'score' : 'level';
-        const hasShown = shownMilestones[gameType].includes(milestone[key]);
-        
-        // Only trigger on exact match, not just >= 
-        if (!hasShown && value === milestone[key]) {
-            domEffects.showMilestone(milestone.message);
-            domEffects.createCelebration();
-            shownMilestones[gameType].push(milestone[key]);
-        }
-    });
+    // Update Clear Flow target with clearer messaging
+    const cfTarget = document.getElementById('cf-target');
+    const cfDifficulty = document.getElementById('cf-difficulty');
+    const cfGoalInstruction = document.getElementById('cf-goal-instruction');
+    
+    if (cfTarget) cfTarget.textContent = setting.clearFlowTarget;
+    if (cfDifficulty) cfDifficulty.textContent = setting.name;
+    if (cfGoalInstruction) cfGoalInstruction.textContent = setting.clearFlowTarget;
+    
+    // Update Puzzle Pipeline difficulty
+    const ppDifficulty = document.getElementById('pp-difficulty');
+    if (ppDifficulty) ppDifficulty.textContent = setting.name;
 }
 
-// Show main menu
-function showMainMenu() {
-    showPage('hub-page');
-    updateProgress();
-}
-
-// Show celebration screen
-function showCelebration() {
-    sounds.complete();
-    showPage('hub-page');
-    
-    // Show celebration overlay
-    const celebrationOverlay = document.createElement('div');
-    celebrationOverlay.className = 'celebration-overlay';
-    celebrationOverlay.innerHTML = `
-        <div class="celebration-content">
-            <h1>🎉 Congratulations! 🎉</h1>
-            <h2>You've successfully cleaned the water tank!</h2>
-            <p>Thank you for helping charity: water's mission!</p>
-            <button class="main-btn" onclick="this.parentElement.parentElement.remove()">Continue</button>
-        </div>
-    `;
-    
-    celebrationOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    `;
-    
-    celebrationOverlay.querySelector('.celebration-content').style.cssText = `
-        background: linear-gradient(135deg, #2E9DF7, #FFC907);
-        color: white;
-        padding: 3rem;
-        border-radius: 20px;
-        text-align: center;
-        max-width: 500px;
-        margin: 1rem;
-    `;
-    
-    document.body.appendChild(celebrationOverlay);
-    
-    updateProgress();
-}
-
-// Update progress
+// Update progress tracking
 function updateProgress() {
-    const waterFill = document.getElementById('water-fill');
     const progressText = document.getElementById('progress-text');
+    const waterFill = document.getElementById('water-fill');
     
-    if (!waterFill || !progressText) return;
-    
-    const completedGames = Object.values(progress).filter(Boolean).length;
-    const totalGames = Object.keys(progress).length;
-    const percentage = (completedGames / totalGames) * 100;
-    
-    waterFill.style.height = percentage + '%';
-    progressText.textContent = `Progress: ${completedGames}/${totalGames} games completed`;
-    
-    if (completedGames === totalGames) {
-        showCelebration();
+    if (progressText && waterFill) {
+        const clearFlowCompleted = localStorage.getItem('cw_clear_flow_completed') === 'true' ? 1 : 0;
+        const puzzleCompleted = localStorage.getItem('cw_puzzle_completed') === 'true' ? 1 : 0;
+        const totalCompleted = clearFlowCompleted + puzzleCompleted;
+        
+        progressText.textContent = `Progress: ${totalCompleted}/2 games completed`;
+        
+        const percentage = (totalCompleted / 2) * 100;
+        waterFill.style.height = percentage + '%';
     }
 }
 
-// Mark games as complete
-function markClearFlowComplete() {
-    localStorage.setItem('cw_clearFlow', 'done');
-    progress.clearFlow = true;
-    updateProgress();
-}
-
-function markPuzzlePipelineComplete() {
-    localStorage.setItem('cw_puzzlePipeline', 'done');
-    progress.puzzlePipeline = true;
-    updateProgress();
-}
-
-// Clear the Flow Game (2048-style) - removed old inline HTML version
+// Clear the Flow Game
+let clearFlowBoard = [];
+let clearFlowScore = 0;
 
 function startClearFlowGame() {
-    // Reset milestones for this game session
-    shownMilestones.clearFlow = [];
+    console.log('Starting Clear Flow game');
+    clearFlowBoard = [];
+    clearFlowScore = 0;
     
-    // Update UI elements
-    document.getElementById('cf-difficulty').textContent = difficultySettings[currentDifficulty].name;
-    document.getElementById('cf-target').textContent = difficultySettings[currentDifficulty].clearFlowTarget;
-    
-    // 4x4 grid, filled with 0 (empty)
-    let board = [
-        [0,0,0,0],
-        [0,0,0,0],
-        [0,0,0,0],
-        [0,0,0,0]
-    ];
-    let score = 0;
-    let gameOver = false;
-    const boardDiv = document.getElementById('cf-board');
-    const scoreDiv = document.getElementById('cf-score');
-    const messageDiv = document.getElementById('cf-message');
-
-    // Add two starting tiles
+    updateDifficultyDisplays();
+    initializeClearFlowBoard();
     addRandomTile();
     addRandomTile();
-    updateBoard();
-    messageDiv.style.display = 'none';
-
-    // Listen for arrow keys
-    document.addEventListener('keydown', handleKey);
+    updateClearFlowDisplay();
     
-    // Reset button
-    document.getElementById('cf-reset').onclick = () => {
-        board = [
-            [0,0,0,0],
-            [0,0,0,0],
-            [0,0,0,0],
-            [0,0,0,0]
-        ];
-        score = 0;
-        gameOver = false;
-        addRandomTile();
-        addRandomTile();
-        updateBoard();
-        messageDiv.style.display = 'none';
-        document.addEventListener('keydown', handleKey);
-    };
+    // Add keyboard controls
+    document.addEventListener('keydown', handleClearFlowKey);
+}
 
-    function addRandomTile() {
-        const empty = [];
-        for (let r = 0; r < 4; r++) {
-            for (let c = 0; c < 4; c++) {
-                if (board[r][c] === 0) empty.push([r, c]);
-            }
-        }
-        if (empty.length > 0) {
-            const [r, c] = empty[Math.floor(Math.random() * empty.length)];
-            board[r][c] = Math.random() < 0.9 ? 2 : 4;
-        }
-    }
-
-    function updateBoard() {
-        scoreDiv.textContent = score;
-        boardDiv.innerHTML = '';
+function initializeClearFlowBoard() {
+    clearFlowBoard = Array(4).fill(null).map(() => Array(4).fill(0));
+    
+    const boardElement = document.getElementById('cf-board');
+    if (boardElement) {
+        boardElement.innerHTML = '';
+        boardElement.style.cssText = `
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            background: #bbada0;
+            border-radius: 10px;
+            padding: 10px;
+        `;
         
-        for (let r = 0; r < 4; r++) {
-            for (let c = 0; c < 4; c++) {
-                const tile = document.createElement('div');
-                tile.className = 'cf-cell';
-                tile.textContent = board[r][c] === 0 ? '' : board[r][c];
-                tile.setAttribute('data-value', board[r][c]);
-                
-                // Add special styling for target tile
-                if (board[r][c] === difficultySettings[currentDifficulty].clearFlowTarget) {
-                    tile.style.border = '3px solid #FFC907';
-                    tile.style.boxShadow = '0 0 20px rgba(255,201,7,0.5)';
-                }
-                
-                boardDiv.appendChild(tile);
-            }
+        for (let i = 0; i < 16; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cf-cell';
+            cell.id = `cf-cell-${i}`;
+            cell.style.cssText = `
+                background: #cdc1b4;
+                border-radius: 5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: #776e65;
+            `;
+            boardElement.appendChild(cell);
         }
-    }
-
-    function handleKey(e) {
-        if (gameOver) return;
-        
-        let moved = false;
-        const oldScore = score;
-        
-        if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
-            e.preventDefault();
-            const oldBoard = JSON.stringify(board);
-            
-            if (e.key === "ArrowLeft") moveLeft();
-            if (e.key === "ArrowRight") moveRight();
-            if (e.key === "ArrowUp") moveUp();
-            if (e.key === "ArrowDown") moveDown();
-            
-            if (JSON.stringify(board) !== oldBoard) moved = true;
-        }
-        
-        if (moved) {
-            sounds.move();
-            if (score > oldScore) {
-                sounds.merge();
-            }
-            addRandomTile();
-            updateBoard();
-            checkGameOver();
-        }
-    }
-
-    function moveLeft() {
-        for (let r = 0; r < 4; r++) {
-            let row = board[r].filter(x => x);
-            for (let c = 0; c < row.length - 1; c++) {
-                if (row[c] === row[c + 1]) {
-                    row[c] *= 2;
-                    score += row[c];
-                    row[c + 1] = 0;
-                }
-            }
-            row = row.filter(x => x);
-            while (row.length < 4) row.push(0);
-            board[r] = row;
-        }
-    }
-
-    function moveRight() {
-        for (let r = 0; r < 4; r++) {
-            let row = board[r].filter(x => x);
-            for (let c = row.length - 1; c > 0; c--) {
-                if (row[c] === row[c - 1]) {
-                    row[c] *= 2;
-                    score += row[c];
-                    row[c - 1] = 0;
-                }
-            }
-            row = row.filter(x => x);
-            while (row.length < 4) row.unshift(0);
-            board[r] = row;
-        }
-    }
-
-    function moveUp() {
-        for (let c = 0; c < 4; c++) {
-            let col = [];
-            for (let r = 0; r < 4; r++) col.push(board[r][c]);
-            col = col.filter(x => x);
-            for (let r = 0; r < col.length - 1; r++) {
-                if (col[r] === col[r + 1]) {
-                    col[r] *= 2;
-                    score += col[r];
-                    col[r + 1] = 0;
-                }
-            }
-            col = col.filter(x => x);
-            while (col.length < 4) col.push(0);
-            for (let r = 0; r < 4; r++) board[r][c] = col[r];
-        }
-    }
-
-    function moveDown() {
-        for (let c = 0; c < 4; c++) {
-            let col = [];
-            for (let r = 0; r < 4; r++) col.push(board[r][c]);
-            col = col.filter(x => x);
-            for (let r = col.length - 1; r > 0; r--) {
-                if (col[r] === col[r - 1]) {
-                    col[r] *= 2;
-                    score += col[r];
-                    col[r - 1] = 0;
-                }
-            }
-            col = col.filter(x => x);
-            while (col.length < 4) col.unshift(0);
-            for (let r = 0; r < 4; r++) board[r][c] = col[r];
-        }
-    }
-
-    function checkGameOver() {
-        const winTarget = difficultySettings[currentDifficulty].clearFlowTarget;
-        
-        // Check for win
-        for (let r = 0; r < 4; r++) {
-            for (let c = 0; c < 4; c++) {
-                if (board[r][c] === winTarget) {
-                    sounds.win();
-                    domEffects.createCelebration();
-                    const difficultyName = difficultySettings[currentDifficulty].name.replace(' Mode', '');
-                    messageDiv.innerHTML = `🎉 Congratulations! You cleared ${difficultyName} difficulty!<br>Returning to main hub...`;
-                    messageDiv.className = 'game-message success';
-                    messageDiv.style.display = 'block';
-                    document.removeEventListener('keydown', handleKey);
-                    markClearFlowComplete();
-                    gameOver = true;
-                    
-                    // Trigger milestone only on actual completion
-                    checkMilestones('clearFlow', winTarget);
-                    
-                    // Auto return to hub after 3 seconds
-                    setTimeout(() => {
-                        showPage('hub-page');
-                    }, 3000);
-                    return;
-                }
-            }
-        }
-        
-        // Check for game over
-        if (!canMove()) {
-            messageDiv.innerHTML = 'No more moves! Try again.';
-            messageDiv.className = 'game-message info';
-            messageDiv.style.display = 'block';
-            document.removeEventListener('keydown', handleKey);
-            gameOver = true;
-        }
-    }
-
-    function canMove() {
-        for (let r = 0; r < 4; r++) {
-            for (let c = 0; c < 4; c++) {
-                if (board[r][c] === 0) return true;
-                if (c < 3 && board[r][c] === board[r][c + 1]) return true;
-                if (r < 3 && board[r][c] === board[r + 1][c]) return true;
-            }
-        }
-        return false;
     }
 }
 
-// Puzzle Pipeline Game (Number linking game) - removed old inline HTML version
+function addRandomTile() {
+    const emptyCells = [];
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            if (clearFlowBoard[i][j] === 0) {
+                emptyCells.push({row: i, col: j});
+            }
+        }
+    }
+    
+    if (emptyCells.length > 0) {
+        const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        clearFlowBoard[randomCell.row][randomCell.col] = Math.random() < 0.9 ? 2 : 4;
+    }
+}
+
+function updateClearFlowDisplay() {
+    // Update score
+    const scoreElement = document.getElementById('cf-score');
+    if (scoreElement) {
+        scoreElement.textContent = clearFlowScore;
+    }
+    
+    // Update board
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            const cellId = `cf-cell-${i * 4 + j}`;
+            const cellElement = document.getElementById(cellId);
+            if (cellElement) {
+                const value = clearFlowBoard[i][j];
+                cellElement.textContent = value === 0 ? '' : value;
+                
+                // Color coding
+                if (value === 0) {
+                    cellElement.style.background = '#cdc1b4';
+                } else if (value === 2) {
+                    cellElement.style.background = '#eee4da';
+                } else if (value === 4) {
+                    cellElement.style.background = '#ede0c8';
+                } else {
+                    cellElement.style.background = '#f2b179';
+                }
+            }
+        }
+    }
+    
+    // Check win condition - FIXED: Check for tile value, not score
+    const target = difficultySettings[currentDifficulty].clearFlowTarget;
+    let hasWinningTile = false;
+    
+    // Check if any tile has reached the target value
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            if (clearFlowBoard[i][j] === target) {
+                hasWinningTile = true;
+                break;
+            }
+        }
+        if (hasWinningTile) break;
+    }
+    
+    if (hasWinningTile) {
+        setTimeout(() => {
+            sounds.success();
+            domEffects.createCelebration();
+            showMessage('cf-message', `🎉 Congratulations! You reached ${target}!`, 'success');
+            localStorage.setItem('cw_clear_flow_completed', 'true');
+            updateProgress();
+            
+            // Auto return to hub after 3 seconds
+            setTimeout(() => {
+                showPage('hub-page');
+            }, 3000);
+        }, 100);
+    }
+}
+
+function handleClearFlowKey(e) {
+    if (currentPage !== 'clear-flow-page') return;
+    
+    let moved = false;
+    
+    switch(e.key) {
+        case 'ArrowUp':
+            e.preventDefault();
+            moved = moveClearFlowUp();
+            break;
+        case 'ArrowDown':
+            e.preventDefault();
+            moved = moveClearFlowDown();
+            break;
+        case 'ArrowLeft':
+            e.preventDefault();
+            moved = moveClearFlowLeft();
+            break;
+        case 'ArrowRight':
+            e.preventDefault();
+            moved = moveClearFlowRight();
+            break;
+    }
+    
+    if (moved) {
+        addRandomTile();
+        updateClearFlowDisplay();
+        sounds.click();
+    }
+}
+
+function moveClearFlowUp() {
+    let moved = false;
+    for (let j = 0; j < 4; j++) {
+        let tiles = [];
+        for (let i = 0; i < 4; i++) {
+            if (clearFlowBoard[i][j] !== 0) {
+                tiles.push(clearFlowBoard[i][j]);
+            }
+        }
+        
+        let merged = mergeTiles(tiles);
+        for (let i = 0; i < 4; i++) {
+            let newValue = i < merged.length ? merged[i] : 0;
+            if (clearFlowBoard[i][j] !== newValue) {
+                moved = true;
+            }
+            clearFlowBoard[i][j] = newValue;
+        }
+    }
+    return moved;
+}
+
+function moveClearFlowDown() {
+    let moved = false;
+    for (let j = 0; j < 4; j++) {
+        let tiles = [];
+        for (let i = 3; i >= 0; i--) {
+            if (clearFlowBoard[i][j] !== 0) {
+                tiles.push(clearFlowBoard[i][j]);
+            }
+        }
+        
+        let merged = mergeTiles(tiles);
+        for (let i = 3; i >= 0; i--) {
+            let newValue = 3 - i < merged.length ? merged[3 - i] : 0;
+            if (clearFlowBoard[i][j] !== newValue) {
+                moved = true;
+            }
+            clearFlowBoard[i][j] = newValue;
+        }
+    }
+    return moved;
+}
+
+function moveClearFlowLeft() {
+    let moved = false;
+    for (let i = 0; i < 4; i++) {
+        let tiles = [];
+        for (let j = 0; j < 4; j++) {
+            if (clearFlowBoard[i][j] !== 0) {
+                tiles.push(clearFlowBoard[i][j]);
+            }
+        }
+        
+        let merged = mergeTiles(tiles);
+        for (let j = 0; j < 4; j++) {
+            let newValue = j < merged.length ? merged[j] : 0;
+            if (clearFlowBoard[i][j] !== newValue) {
+                moved = true;
+            }
+            clearFlowBoard[i][j] = newValue;
+        }
+    }
+    return moved;
+}
+
+function moveClearFlowRight() {
+    let moved = false;
+    for (let i = 0; i < 4; i++) {
+        let tiles = [];
+        for (let j = 3; j >= 0; j--) {
+            if (clearFlowBoard[i][j] !== 0) {
+                tiles.push(clearFlowBoard[i][j]);
+            }
+        }
+        
+        let merged = mergeTiles(tiles);
+        for (let j = 3; j >= 0; j--) {
+            let newValue = 3 - j < merged.length ? merged[3 - j] : 0;
+            if (clearFlowBoard[i][j] !== newValue) {
+                moved = true;
+            }
+            clearFlowBoard[i][j] = newValue;
+        }
+    }
+    return moved;
+}
+
+function mergeTiles(tiles) {
+    let result = [];
+    for (let i = 0; i < tiles.length; i++) {
+        if (i < tiles.length - 1 && tiles[i] === tiles[i + 1]) {
+            result.push(tiles[i] * 2);
+            clearFlowScore += tiles[i] * 2;
+            i++; // Skip next tile as it's merged
+        } else {
+            result.push(tiles[i]);
+        }
+    }
+    return result;
+}
+
+// Puzzle Pipeline Game
+let puzzleLevel = 1;
+let puzzleBoard = [];
+let paths = {};
+let isDrawing = false;
+let currentPath = null;
+
+// Puzzle Pipeline game state
+let puzzlePipelineCurrentLevel = 0;
+let puzzlePipelineMaxLevels = 5;
 
 function startPuzzlePipelineGame() {
-    let currentLevel = 0;
-    const maxLevels = difficultySettings[currentDifficulty].puzzleLevels;
-    let isDrawing = false;
+    console.log('Starting Puzzle Pipeline game');
+    puzzlePipelineCurrentLevel = 0;
+    puzzlePipelineMaxLevels = difficultySettings[currentDifficulty].puzzleLevels;
+    isDrawing = false;
     
-    // Reset milestones for this game session
-    shownMilestones.puzzlePipeline = [];
+    console.log(`Puzzle Pipeline initialized:`);
+    console.log(`- Current level: ${puzzlePipelineCurrentLevel}`);
+    console.log(`- Max levels: ${puzzlePipelineMaxLevels}`);
+    console.log(`- Difficulty: ${currentDifficulty}`);
     
-    // Update UI
-    document.getElementById('pp-difficulty').textContent = difficultySettings[currentDifficulty].name;
+    updateDifficultyDisplays();
     
+    // Original predefined puzzle levels
     const levels = [
         {
             grid: [
@@ -849,15 +891,16 @@ function startPuzzlePipelineGame() {
     ];
 
     function loadLevel(levelIndex) {
-        if (levelIndex >= maxLevels) {
+        console.log(`Loading level ${levelIndex + 1}, maxLevels: ${puzzlePipelineMaxLevels}`);
+        
+        if (levelIndex >= puzzlePipelineMaxLevels || levelIndex >= levels.length) {
             // All levels completed
-            sounds.complete();
+            console.log('All levels completed, returning to hub');
+            sounds.success();
             domEffects.createCelebration();
-            const messageDiv = document.getElementById('pp-message');
-            messageDiv.innerHTML = `🎉 All levels completed on ${difficultySettings[currentDifficulty].name}!`;
-            messageDiv.className = 'game-message success';
-            messageDiv.style.display = 'block';
-            markPuzzlePipelineComplete();
+            showMessage('pp-message', `🎉 All levels completed on ${difficultySettings[currentDifficulty].name}!`, 'success');
+            localStorage.setItem('cw_puzzle_completed', 'true');
+            updateProgress();
             
             // Auto return to hub after 3 seconds
             setTimeout(() => {
@@ -867,9 +910,17 @@ function startPuzzlePipelineGame() {
         }
 
         // Update level display
+        puzzlePipelineCurrentLevel = levelIndex;
         document.getElementById('pp-level').textContent = levelIndex + 1;
         
         const level = levels[levelIndex];
+        if (!level) {
+            console.error(`Level ${levelIndex} not found!`);
+            showPage('hub-page');
+            return;
+        }
+        
+        console.log(`Successfully loading level ${levelIndex + 1}`);
         const size = level.size;
         const grid = [...level.grid.map(row => [...row])]; // Deep copy
         
@@ -885,17 +936,16 @@ function startPuzzlePipelineGame() {
             }
         }
 
-        let paths = {};
-        let currentPath = null;
+        let levelPaths = {};
+        let levelCurrentPath = null;
         let solved = false;
 
         const boardDiv = document.getElementById('pp-board');
-        const levelDiv = document.getElementById('pp-level');
-        const messageDiv = document.getElementById('pp-message');
         
-        levelDiv.textContent = `Level ${levelIndex + 1}`;
-        boardDiv.style.gridTemplateColumns = `repeat(${size}, 70px)`;
-        boardDiv.style.gridTemplateRows = `repeat(${size}, 70px)`;
+        boardDiv.style.gridTemplateColumns = `repeat(${size}, 60px)`;
+        boardDiv.style.gridTemplateRows = `repeat(${size}, 60px)`;
+        boardDiv.style.width = `${size * 60 + (size - 1) * 2}px`;
+        boardDiv.style.height = `${size * 60 + (size - 1) * 2}px`;
         
         drawBoard();
 
@@ -907,38 +957,46 @@ function startPuzzlePipelineGame() {
                     cell.className = 'pp-cell';
                     cell.dataset.row = r;
                     cell.dataset.col = c;
+                    cell.style.cssText = `
+                        background: white;
+                        border-radius: 3px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1rem;
+                        font-weight: bold;
+                        color: #2E9DF7;
+                        cursor: pointer;
+                        user-select: none;
+                        border: 1px solid #ddd;
+                    `;
                     
                     if (grid[r][c] > 0) {
                         cell.textContent = grid[r][c];
-                        cell.classList.add('pp-endpoint');
                         cell.style.backgroundColor = getColor(grid[r][c]);
                         cell.style.color = '#fff';
                         cell.style.fontWeight = 'bold';
                     } else {
                         // Check if this cell is part of a completed path
                         let inPath = false;
-                        for (let num in paths) {
-                            if (paths[num].some(([pr, pc]) => pr === r && pc === c)) {
+                        for (let num in levelPaths) {
+                            if (levelPaths[num].some(([pr, pc]) => pr === r && pc === c)) {
                                 cell.style.backgroundColor = getColor(num);
-                                cell.classList.add('pp-path');
                                 inPath = true;
                                 break;
                             }
                         }
                         
                         // Check if this cell is part of the current path being drawn
-                        if (!inPath && currentPath && currentPath.path.some(([pr, pc]) => pr === r && pc === c)) {
-                            cell.style.backgroundColor = getColor(currentPath.number);
+                        if (!inPath && levelCurrentPath && levelCurrentPath.path.some(([pr, pc]) => pr === r && pc === c)) {
+                            cell.style.backgroundColor = getColor(levelCurrentPath.number);
                             cell.style.opacity = '0.7';
-                            cell.classList.add('pp-current-path');
                             inPath = true;
                         }
                         
                         if (!inPath) {
-                            cell.textContent = '';
-                            cell.style.backgroundColor = '';
-                            cell.style.opacity = '';
-                            cell.classList.remove('pp-path', 'pp-current-path');
+                            cell.style.backgroundColor = 'white';
+                            cell.style.opacity = '1';
                         }
                     }
                     
@@ -959,7 +1017,7 @@ function startPuzzlePipelineGame() {
             document.addEventListener('mouseup', () => {
                 if (isDrawing) {
                     isDrawing = false;
-                    currentPath = null;
+                    levelCurrentPath = null;
                     drawBoard();
                 }
             });
@@ -974,7 +1032,7 @@ function startPuzzlePipelineGame() {
             
             if (grid[r][c] > 0) {
                 const num = grid[r][c];
-                currentPath = { number: num, path: [[r, c]] };
+                levelCurrentPath = { number: num, path: [[r, c]] };
                 isDrawing = true;
                 sounds.click();
                 drawBoard(); // Redraw to show current path
@@ -982,173 +1040,174 @@ function startPuzzlePipelineGame() {
         }
 
         function continuePath(e) {
-            if (!currentPath || solved || !isDrawing) return;
+            if (!levelCurrentPath || solved || !isDrawing) return;
             e.preventDefault();
             
             const r = parseInt(e.target.dataset.row);
             const c = parseInt(e.target.dataset.col);
             
             // Check if this is a valid next cell
-            const lastPos = currentPath.path[currentPath.path.length - 1];
+            const lastPos = levelCurrentPath.path[levelCurrentPath.path.length - 1];
             const distance = Math.abs(r - lastPos[0]) + Math.abs(c - lastPos[1]);
             
             if (distance === 1) { // Adjacent cell
-                if (grid[r][c] === 0 || grid[r][c] === currentPath.number) {
+                if (grid[r][c] === 0 || grid[r][c] === levelCurrentPath.number) {
                     // Check if not already in current path
-                    if (!currentPath.path.some(([pr, pc]) => pr === r && pc === c)) {
-                        currentPath.path.push([r, c]);
-                        sounds.connect();
-                        drawBoard(); // Redraw to show updated path
-                    }
-                }
-            }
-        }
-
-        function handleTouchMove(e) {
-            if (!currentPath || solved || !isDrawing) return;
-            e.preventDefault();
-            
-            const touch = e.touches[0];
-            const element = document.elementFromPoint(touch.clientX, touch.clientY);
-            
-            if (element && element.dataset && element.dataset.row !== undefined) {
-                const r = parseInt(element.dataset.row);
-                const c = parseInt(element.dataset.col);
-                
-                // Check if this is a valid next cell
-                const lastPos = currentPath.path[currentPath.path.length - 1];
-                const distance = Math.abs(r - lastPos[0]) + Math.abs(c - lastPos[1]);
-                
-                if (distance === 1) { // Adjacent cell
-                    if (grid[r][c] === 0 || grid[r][c] === currentPath.number) {
-                        // Check if not already in current path
-                        if (!currentPath.path.some(([pr, pc]) => pr === r && pc === c)) {
-                            currentPath.path.push([r, c]);
-                            sounds.connect();
-                            drawBoard(); // Redraw to show updated path
-                        }
+                    if (!levelCurrentPath.path.some(([pr, pc]) => pr === r && pc === c)) {
+                        levelCurrentPath.path.push([r, c]);
+                        drawBoard();
                     }
                 }
             }
         }
 
         function endPath(e) {
-            if (!currentPath || solved) return;
+            if (!levelCurrentPath || solved || !isDrawing) return;
             e.preventDefault();
-            isDrawing = false;
             
             const r = parseInt(e.target.dataset.row);
             const c = parseInt(e.target.dataset.col);
             
-            // Check if we ended at the matching endpoint
-            if (grid[r][c] === currentPath.number && currentPath.path.length > 1) {
-                const endpointPairs = endpoints[currentPath.number];
-                if (endpointPairs.length === 2) {
-                    const [start, end] = endpointPairs;
-                    const pathStart = currentPath.path[0];
-                    const pathEnd = currentPath.path[currentPath.path.length - 1];
-                    
-                    if ((pathStart[0] === start[0] && pathStart[1] === start[1] && 
-                         pathEnd[0] === end[0] && pathEnd[1] === end[1]) ||
-                        (pathStart[0] === end[0] && pathStart[1] === end[1] && 
-                         pathEnd[0] === start[0] && pathEnd[1] === start[1])) {
-                        
-                        paths[currentPath.number] = currentPath.path;
-                        sounds.complete();
-                        // Removed checkMilestones here - only check on full level completion
-                    }
-                    }
-                }
+            // Check if ending on a matching endpoint
+            if (grid[r][c] === levelCurrentPath.number && levelCurrentPath.path.length > 1) {
+                // Valid connection
+                levelPaths[levelCurrentPath.number] = [...levelCurrentPath.path];
+                sounds.success();
+                
+                // Check if puzzle is solved
+                checkSolved();
+            } else {
+                // Invalid connection, clear path
+                sounds.click();
             }
             
-            currentPath = null;
+            isDrawing = false;
+            levelCurrentPath = null;
             drawBoard();
-            checkWin();
         }
 
-        function checkWin() {
-            // Check if all cells are filled
-            let filledCells = 0;
-            for (let r = 0; r < size; r++) {
-                for (let c = 0; c < size; c++) {
-                    if (grid[r][c] > 0) {
-                        filledCells++;
-                    } else {
-                        // Check if part of a path
-                        for (let num in paths) {
-                            if (paths[num].some(([pr, pc]) => pr === r && pc === c)) {
-                                filledCells++;
+        function handleTouchMove(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (element && element.classList.contains('pp-cell')) {
+                continuePath({target: element});
+            }
+        }
+
+        function checkSolved() {
+            // Check if all number pairs are connected
+            const requiredConnections = Object.keys(endpoints).length;
+            const madeConnections = Object.keys(levelPaths).length;
+            
+            if (madeConnections === requiredConnections) {
+                // Check if all cells are filled
+                let allFilled = true;
+                for (let r = 0; r < size; r++) {
+                    for (let c = 0; c < size; c++) {
+                        if (grid[r][c] === 0) {
+                            // Check if this cell is part of any path
+                            let inPath = false;
+                            for (let num in levelPaths) {
+                                if (levelPaths[num].some(([pr, pc]) => pr === r && pc === c)) {
+                                    inPath = true;
+                                    break;
+                                }
+                            }
+                            if (!inPath) {
+                                allFilled = false;
                                 break;
                             }
                         }
                     }
-                }
-            }
-            
-            if (filledCells === size * size && Object.keys(paths).length === Object.keys(endpoints).length) {
-                solved = true;
-                sounds.win();
-                
-                // Check milestones only on complete level finish
-                if (levelIndex + 1 === maxLevels) {
-                    checkMilestones('puzzlePipeline', maxLevels);
+                    if (!allFilled) break;
                 }
                 
-                if (levelIndex === maxLevels - 1) {
-                    // All levels completed
-                    const messageDiv = document.getElementById('pp-message');
-                    messageDiv.innerHTML = `🎉 Congratulations! You cleared Puzzle Pipeline!<br>Returning to main hub...`;
-                    messageDiv.className = 'game-message success';
-                    messageDiv.style.display = 'block';
+                if (allFilled) {
+                    solved = true;
+                    sounds.success();
+                    domEffects.createCelebration();
                     
-                    setTimeout(() => {
-                        markPuzzlePipelineComplete();
-                        showPage('hub-page');
-                    }, 3000);
-                } else {
-                    // Level completed, show message and auto-advance to next level
-                    const messageDiv = document.getElementById('pp-message');
-                    messageDiv.innerHTML = `💧 Level ${levelIndex + 1} complete! Moving to level ${levelIndex + 2}...`;
-                    messageDiv.className = 'game-message success';
-                    messageDiv.style.display = 'block';
+                    console.log(`Level ${puzzlePipelineCurrentLevel + 1} completed!`);
+                    console.log(`Current level: ${puzzlePipelineCurrentLevel}, Max levels: ${puzzlePipelineMaxLevels}`);
                     
-                    // Increment currentLevel and load the next level
-                    currentLevel = levelIndex + 1;
-                    setTimeout(() => {
-                        messageDiv.style.display = 'none';
-                        loadLevel(currentLevel);
-                    }, 1500);
+                    const messageDiv = document.getElementById('pp-message');
+                    const nextLevel = puzzlePipelineCurrentLevel + 1;
+                    
+                    if (nextLevel < puzzlePipelineMaxLevels && nextLevel < levels.length) {
+                        console.log(`Loading next level: ${nextLevel + 1}`);
+                        showMessage('pp-message', `🎉 Level ${puzzlePipelineCurrentLevel + 1} completed! Loading next level...`, 'success');
+                        setTimeout(() => {
+                            loadLevel(nextLevel);
+                        }, 2000);
+                    } else {
+                        console.log('All levels completed for this difficulty');
+                        showMessage('pp-message', `🎉 All levels completed on ${difficultySettings[currentDifficulty].name}!`, 'success');
+                        localStorage.setItem('cw_puzzle_completed', 'true');
+                        updateProgress();
+                        
+                        setTimeout(() => {
+                            showPage('hub-page');
+                        }, 3000);
+                    }
                 }
             }
         }
 
         function getColor(num) {
-            const colors = ['#2E9DF7', '#FFC907', '#4FCB53', '#F5402C', '#8BD1CB', '#FF902A'];
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#5F27CD'];
             return colors[(num - 1) % colors.length];
         }
-
-        // Reset button
-        document.getElementById('pp-reset').onclick = () => {
-            paths = {};
-            currentPath = null;
-            solved = false;
-            isDrawing = false;
-            drawBoard();
-            const messageDiv = document.getElementById('pp-message');
-            messageDiv.style.display = 'none';
-            sounds.click();
-        };
     }
 
-    loadLevel(currentLevel);
+    loadLevel(puzzlePipelineCurrentLevel);
+}
+
+// Utility functions
+function showMessage(elementId, message, type = 'info') {
+    const messageElement = document.getElementById(elementId);
+    if (messageElement) {
+        messageElement.textContent = message;
+        messageElement.className = `game-message ${type}`;
+        messageElement.style.display = 'block';
+        
+        setTimeout(() => {
+            messageElement.style.display = 'none';
+        }, 3000);
+    }
+}
+
+// Color function for puzzle pipeline
+function getColor(num) {
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#5F27CD'];
+    return colors[(num - 1) % colors.length];
 }
 
 // Add logout function for testing
 function clearRegistration() {
+    console.log('Clearing registration data...');
     localStorage.removeItem('cw_player_name');
     localStorage.removeItem('cw_player_email');
+    localStorage.removeItem('cw_clear_flow_completed');
+    localStorage.removeItem('cw_puzzle_completed');
+    console.log('Registration data cleared, redirecting to register page');
     showPage('register-page');
 }
 
 // Add this to window for testing in console
 window.clearRegistration = clearRegistration;
+
+// Add debugging function to check registration status
+function checkRegistrationStatus() {
+    const name = localStorage.getItem('cw_player_name');
+    const email = localStorage.getItem('cw_player_email');
+    console.log('Registration Status:', {
+        name: name,
+        email: email,
+        isRegistered: !!(name && email && name.trim() !== '' && email.trim() !== ''),
+        currentPage: currentPage
+    });
+    return { name, email };
+}
+
+window.checkRegistrationStatus = checkRegistrationStatus;

@@ -197,6 +197,41 @@ main {
     100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
+/* Secondary Button */
+.secondary-btn {
+    background: transparent;
+    color: var(--text-light);
+    border: 2px solid var(--text-light);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.secondary-btn:hover {
+    background: var(--text-light);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Register Actions */
+.register-actions {
+    text-align: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+.register-note {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
 /* Difficulty Section */
 .difficulty-section {
     text-align: center;
