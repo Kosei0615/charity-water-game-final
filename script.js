@@ -1266,6 +1266,18 @@ function loadPuzzleLevel(levelIndex) {
     console.log(`Loading level ${levelIndex + 1}, maxLevels: ${puzzlePipelineMaxLevels}`);
     console.log(`Total levels in array: ${puzzlePipelineLevels.length}`);
     console.log(`Current difficulty: ${currentDifficulty}`);
+    console.log(`Current page: ${currentPage}`);
+    
+    // Ensure we're on the correct page before loading level
+    if (currentPage !== 'puzzle-pipeline-page') {
+        console.log('Not on puzzle pipeline page, switching...');
+        showPage('puzzle-pipeline-page');
+        // Retry loading level after page switch
+        setTimeout(() => {
+            loadPuzzleLevel(levelIndex);
+        }, 100);
+        return;
+    }
     
     // Validate level index
     if (levelIndex < 0 || levelIndex >= puzzlePipelineLevels.length) {
@@ -1330,23 +1342,28 @@ function loadPuzzleLevel(levelIndex) {
         return;
     }
     
-    // Mobile responsive sizing - but keep centering intact
+    // Mobile responsive sizing - IMPROVED FOR CONSISTENCY
     if (isMobileDevice()) {
         console.log('Mobile device detected, applying mobile sizing...');
         const screenWidth = window.innerWidth;
-        const availableWidth = screenWidth * 0.9; // 90% of screen width
-        const cellSize = Math.min(50, Math.floor(availableWidth / size));
+        const screenHeight = window.innerHeight;
+        const maxBoardSize = Math.min(screenWidth * 0.9, screenHeight * 0.5); // Fit within screen
+        const cellSize = Math.floor(maxBoardSize / size) - 4; // Account for gaps
         
-        console.log(`Screen width: ${screenWidth}, Available: ${availableWidth}, Cell size: ${cellSize}`);
+        console.log(`Screen: ${screenWidth}x${screenHeight}, Board size: ${maxBoardSize}, Cell size: ${cellSize}`);
         
-        boardDiv.style.gridTemplateColumns = `repeat(${size}, ${cellSize}px)`;
-        boardDiv.style.gridTemplateRows = `repeat(${size}, ${cellSize}px)`;
+        // Ensure minimum cell size for playability
+        const finalCellSize = Math.max(cellSize, 40);
+        
+        boardDiv.style.gridTemplateColumns = `repeat(${size}, ${finalCellSize}px)`;
+        boardDiv.style.gridTemplateRows = `repeat(${size}, ${finalCellSize}px)`;
         boardDiv.style.gap = '3px';
-        boardDiv.style.maxWidth = `${availableWidth}px`;
+        boardDiv.style.maxWidth = `${size * finalCellSize + (size - 1) * 3}px`;
         
-        // Ensure board is centered
+        // Ensure board is centered and maintains aspect ratio
         boardDiv.style.margin = '0 auto';
         boardDiv.style.justifySelf = 'center';
+        boardDiv.style.aspectRatio = '1';
     } else {
         console.log('Desktop device detected, using standard sizing...');
         boardDiv.style.gridTemplateColumns = `repeat(${size}, 60px)`;
@@ -1438,10 +1455,18 @@ function loadPuzzleLevel(levelIndex) {
                 cell.addEventListener('touchmove', handleTouchMove, { passive: false });
                 cell.addEventListener('touchend', endPath, { passive: false });
                 
-                // Add mobile-specific styles
+                // Mobile-specific optimizations - but maintain desktop appearance
                 if (isMobileDevice()) {
-                    cell.style.minHeight = '50px';
-                    cell.style.fontSize = '1rem';
+                    // Keep the same visual style but optimize for touch
+                    cell.style.cursor = 'pointer';
+                    cell.style.webkitTouchCallout = 'none';
+                    cell.style.webkitUserSelect = 'none';
+                    cell.style.userSelect = 'none';
+                    cell.style.transform = 'translateZ(0)';
+                    cell.style.backfaceVisibility = 'hidden';
+                    // Don't override the desktop styling for consistency
+                } else {
+                    // Desktop optimizations
                     cell.style.cursor = 'pointer';
                 }
                 
@@ -1801,12 +1826,22 @@ function loadPuzzleLevel(levelIndex) {
                     // Go to next level with water animation
                     console.log(`✅ Going to next level: ${nextLevel + 1}`);
                     domEffects.createWaterDrops(8);
-                    showMessage('pp-message', `� Level ${puzzlePipelineCurrentLevel + 1} completed! Water is flowing to the next level...`, 'success');
+                    showMessage('pp-message', `🎉 Level ${puzzlePipelineCurrentLevel + 1} completed! Water is flowing to the next level...`, 'success');
                     
                     setTimeout(() => {
                         domEffects.createCelebration();
                         console.log(`Loading level ${nextLevel + 1} (index ${nextLevel})`);
-                        loadPuzzleLevel(nextLevel);
+                        
+                        // Ensure we stay on the puzzle pipeline page
+                        if (currentPage !== 'puzzle-pipeline-page') {
+                            console.log('Not on puzzle pipeline page, switching back...');
+                            showPage('puzzle-pipeline-page');
+                        }
+                        
+                        // Small delay to ensure page is ready
+                        setTimeout(() => {
+                            loadPuzzleLevel(nextLevel);
+                        }, 100);
                     }, 2000);
                 }
             } else {
