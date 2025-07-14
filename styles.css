@@ -979,7 +979,7 @@ main {
 
 /* Enhanced Mobile Centering Fixes */
 @media (max-width: 768px) {
-    /* Clear the Flow - Perfect Mobile Centering */
+    /* Clear the Flow - Stabilized Mobile Centering */
     #clear-flow-page .game-board-container {
         display: flex !important;
         flex-direction: column !important;
@@ -988,6 +988,9 @@ main {
         width: 100vw !important;
         padding: 0 !important;
         margin: 0 !important;
+        /* Prevent rubber band effect */
+        position: relative !important;
+        overflow: hidden !important;
     }
     
     .cf-board {
@@ -998,15 +1001,17 @@ main {
         margin: 1rem auto !important;
         padding: 0.5rem !important;
         gap: 6px !important;
-        /* Triple centering for bulletproof mobile centering */
-        position: relative !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        /* Flexbox backup */
+        /* Stable centering without transforms */
+        position: static !important;
+        left: auto !important;
+        transform: none !important;
+        /* Pure flexbox centering */
         display: grid !important;
-        place-self: center !important;
         justify-self: center !important;
         align-self: center !important;
+        /* Prevent movement during interactions */
+        will-change: auto !important;
+        backface-visibility: hidden !important;
     }
     
     #cf-board {
@@ -1015,12 +1020,16 @@ main {
         max-width: 350px !important;
         max-height: 350px !important;
         margin: 0 auto !important;
-        position: relative !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
+        /* Remove transforms that cause rubber band */
+        position: static !important;
+        left: auto !important;
+        transform: none !important;
+        /* Stable grid layout */
+        display: grid !important;
+        place-content: center !important;
     }
     
-    /* Puzzle Pipeline - Perfect Mobile Centering */
+    /* Puzzle Pipeline - Stabilized Mobile Centering */
     #puzzle-pipeline-page .game-board-container {
         display: flex !important;
         flex-direction: column !important;
@@ -1029,30 +1038,39 @@ main {
         width: 100vw !important;
         padding: 0 !important;
         margin: 0 !important;
+        /* Prevent rubber band effect */
+        position: relative !important;
+        overflow: hidden !important;
     }
     
     .pp-board {
         margin: 1rem auto !important;
         padding: 0.5rem !important;
-        /* Perfect centering with multiple fallbacks */
-        position: relative !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
+        /* Stable centering without transforms */
+        position: static !important;
+        left: auto !important;
+        transform: none !important;
         display: grid !important;
-        place-self: center !important;
         justify-self: center !important;
         align-self: center !important;
         /* Ensure no overflow */
         width: fit-content !important;
         max-width: 90vw !important;
+        /* Prevent movement during touch */
+        will-change: auto !important;
+        backface-visibility: hidden !important;
     }
     
     #pp-board {
         margin: 0 auto !important;
-        position: relative !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
+        /* Remove transforms that cause movement */
+        position: static !important;
+        left: auto !important;
+        transform: none !important;
         width: fit-content !important;
+        /* Stable display */
+        display: grid !important;
+        place-content: center !important;
     }
     
     /* Force centering for game pages */
@@ -1062,5 +1080,68 @@ main {
         align-items: center !important;
         width: 100vw !important;
         overflow-x: hidden !important;
+    }
+    
+    /* Mobile Touch Stabilization - Prevent Rubber Band */
+    /* Prevent horizontal scrolling and rubber band effects */
+    body {
+        overflow-x: hidden !important;
+        position: relative !important;
+        width: 100vw !important;
+        touch-action: pan-y !important;
+    }
+    
+    .game-page {
+        overflow-x: hidden !important;
+        width: 100vw !important;
+        position: relative !important;
+        /* Prevent any horizontal movement */
+        min-width: 100vw !important;
+        max-width: 100vw !important;
+    }
+    
+    /* Stabilize game boards during touch interactions */
+    .cf-board, .pp-board {
+        /* Prevent movement during animations */
+        transform: translateZ(0) !important;
+        backface-visibility: hidden !important;
+        will-change: auto !important;
+        /* Lock position during touch */
+        position: relative !important;
+        contain: layout style paint !important;
+    }
+    
+    /* Prevent touch scrolling on game boards */
+    .cf-board {
+        touch-action: manipulation !important;
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        /* Prevent any transforms during swipe */
+        transition: none !important;
+    }
+    
+    .pp-board {
+        touch-action: manipulation !important;
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        /* Prevent any movement during drag */
+        pointer-events: auto !important;
+    }
+    
+    /* Stabilize cells during interaction */
+    .cf-cell, .pp-cell {
+        /* Prevent individual cell movement */
+        transform: translateZ(0) !important;
+        backface-visibility: hidden !important;
+        will-change: auto !important;
+        /* Quick transitions only */
+        transition: background-color 0.1s ease, box-shadow 0.1s ease !important;
+    }
+    
+    /* Remove any conflicting transforms on mobile */
+    .cf-cell:active, .pp-cell:active {
+        transform: translateZ(0) scale(0.98) !important;
     }
 }

@@ -901,30 +901,32 @@ function addClearFlowTouchControls() {
     
     function handleTouchStart(e) {
         e.preventDefault();
+        e.stopPropagation(); // Prevent event bubbling
         const touch = e.touches[0];
         touchStartX = touch.clientX;
         touchStartY = touch.clientY;
         touchStartTime = Date.now();
         
-        // Visual feedback
-        gameBoard.style.transform = 'scale(0.98)';
-        gameBoard.style.transition = 'transform 0.1s ease';
+        // Minimal visual feedback to prevent layout shifts
+        gameBoard.style.opacity = '0.95';
     }
     
     function handleTouchEnd(e) {
         e.preventDefault();
+        e.stopPropagation(); // Prevent event bubbling
         const touch = e.changedTouches[0];
         touchEndX = touch.clientX;
         touchEndY = touch.clientY;
         
         // Reset visual feedback
-        gameBoard.style.transform = 'scale(1)';
+        gameBoard.style.opacity = '1';
         
         handleSwipe();
     }
     
     function preventTouchMove(e) {
         e.preventDefault(); // Prevent scrolling while playing
+        e.stopPropagation(); // Prevent event bubbling
     }
     
     function handleSwipe() {
@@ -2038,7 +2040,7 @@ function enableMobileOptimizations() {
     if (!document.querySelector('meta[name="viewport"]')) {
         const viewport = document.createElement('meta');
         viewport.name = 'viewport';
-        viewport.content = 'width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0';
+        viewport.content = 'width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0';
         document.head.appendChild(viewport);
         console.log('Viewport meta tag added');
     }
@@ -2051,15 +2053,18 @@ function enableMobileOptimizations() {
         });
     });
     
-    // Add touch-friendly styles
-    document.body.style.touchAction = 'manipulation';
+    // Enhanced touch-friendly styles
+    document.body.style.touchAction = 'pan-y'; // Allow vertical scrolling only
     document.body.style.webkitTapHighlightColor = 'transparent';
     document.body.style.webkitTouchCallout = 'none';
     document.body.style.webkitUserSelect = 'none';
     document.body.style.userSelect = 'none';
+    document.body.style.overflowX = 'hidden'; // Prevent horizontal scroll
     
-    // Improve tap delay and responsiveness
-    document.body.style.cursor = 'pointer';
+    // Prevent elastic scrolling on iOS
+    document.body.style.webkitOverflowScrolling = 'touch';
+    document.body.style.height = '100vh';
+    document.body.style.position = 'relative';
     
     // Add mobile-specific CSS for game boards
     const style = document.createElement('style');
@@ -2070,17 +2075,35 @@ function enableMobileOptimizations() {
             -webkit-touch-callout: none !important;
             touch-action: manipulation !important;
             cursor: pointer !important;
+            /* Prevent movement during touch */
+            will-change: auto !important;
+            backface-visibility: hidden !important;
+            transform: translateZ(0) !important;
         }
         
         .mobile-device .cf-cell {
             user-select: none !important;
             -webkit-user-select: none !important;
             touch-action: manipulation !important;
+            /* Prevent rubber band */
+            will-change: auto !important;
+            backface-visibility: hidden !important;
+            transform: translateZ(0) !important;
         }
         
         .mobile-device .game-board-container {
             overflow-x: hidden !important;
             touch-action: pan-y !important;
+            width: 100vw !important;
+            position: relative !important;
+        }
+        
+        /* Prevent layout shifts during touch interactions */
+        .mobile-device .cf-board,
+        .mobile-device .pp-board {
+            position: relative !important;
+            contain: layout style paint !important;
+            will-change: auto !important;
         }
     `;
     document.head.appendChild(style);
