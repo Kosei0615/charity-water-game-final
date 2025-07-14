@@ -37,7 +37,7 @@ header {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
-    margin-bottom: 2rem;
+    margin-bottom: 0;
 }
 
 .logo {
@@ -218,6 +218,25 @@ main {
     transform: translateY(-2px);
 }
 
+/* Mobile/Desktop Instructions */
+.desktop-instructions {
+    display: block;
+}
+
+.mobile-instructions {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .desktop-instructions {
+        display: none;
+    }
+    
+    .mobile-instructions {
+        display: block;
+    }
+}
+
 /* Register Actions */
 .register-actions {
     text-align: center;
@@ -344,9 +363,39 @@ main {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     border-radius: 24px;
-    padding: 2rem;
-    margin: 2rem 0;
+    padding: 0;
+    margin: 0;
     border: 1px solid var(--glass-border);
+}
+
+/* Game Board Container for perfect centering */
+.game-board-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0;
+}
+
+/* Specific Puzzle Pipeline container centering */
+#puzzle-pipeline-page .game-board-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    padding: 0;
+}
+
+#puzzle-pipeline-page .pp-board {
+    margin: 0 !important;
+    position: static;
+    left: auto;
+    transform: none;
+    align-self: center;
+    justify-self: center;
 }
 
 /* Clear the Flow Game Styles */
@@ -355,14 +404,20 @@ main {
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(4, 1fr);
     gap: 12px;
-    width: 400px;
-    height: 400px;
-    margin: 2rem auto;
-    padding: 1rem;
+    width: 500px;
+    height: 500px;
+    margin: 0 auto;
+    padding: 1.5rem;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    touch-action: manipulation; /* Improve touch performance */
+    user-select: none; /* Prevent text selection on touch */
+    /* Ensure perfect centering */
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .cf-cell {
@@ -371,11 +426,12 @@ main {
     justify-content: center;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 8px;
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     font-weight: bold;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     border: 2px solid transparent;
+    min-height: 90px;
 }
 
 .cf-cell:empty {
@@ -406,12 +462,23 @@ main {
 /* Puzzle Pipeline Game Styles */
 .pp-board {
     display: grid;
-    gap: 4px;
-    max-width: 400px;
-    margin: 2rem auto;
-    padding: 1rem;
+    gap: 6px;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 1.5rem;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 16px;
+    touch-action: manipulation; /* Improve touch performance */
+    user-select: none; /* Prevent text selection on touch */
+    /* Enhanced centering for laptop */
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    /* Force centering with flexbox backup */
+    justify-self: center;
 }
 
 .pp-cell {
@@ -421,11 +488,13 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
+    min-height: 70px;
+    min-width: 70px;
 }
 
 .pp-cell:hover {
@@ -443,8 +512,18 @@ main {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 1; }
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-5px) scale(1.05);
+        opacity: 0.7;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
 }
 
 /* Footer */
@@ -452,7 +531,7 @@ main {
     background: linear-gradient(135deg, var(--text-dark), #2c3e50);
     color: white;
     padding: 3rem 1rem 1rem;
-    margin-top: 4rem;
+    margin-top: 1rem;
 }
 
 .footer-content {
@@ -608,14 +687,14 @@ main {
 .game-page {
     max-width: 600px;
     margin: 0 auto;
-    padding: 1rem;
+    padding: 0;
 }
 
 .game-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 0;
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     border-radius: 16px;
@@ -677,9 +756,9 @@ main {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     border-radius: 20px;
-    padding: 2rem;
+    padding: 0;
     border: 1px solid var(--glass-border);
-    margin-bottom: 2rem;
+    margin: 0;
 }
 
 /* Score and Status */
@@ -815,44 +894,148 @@ main {
     background: rgba(255, 255, 255, 0.3);
 }
 
-/* Responsive Design */
+/* Enhanced Puzzle Pipeline styles for cross-device compatibility */
+#pp-board {
+    touch-action: none; /* Prevent scrolling while drawing paths */
+    -webkit-touch-callout: none; /* Disable callout on iOS */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.pp-cell {
+    /* Enhanced interaction styles */
+    position: relative;
+    overflow: hidden;
+}
+
+.pp-cell::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(46, 157, 247, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.pp-cell:hover::before {
+    opacity: 1;
+}
+
+/* Pulse animation for successful connections */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); background-color: rgba(76, 175, 80, 0.8); }
+    100% { transform: scale(1); }
+}
+
+/* Better responsive design for game boards */
 @media (max-width: 768px) {
-    header h1 {
-        font-size: 2rem;
-    }
-    
-    .player-form-fields {
-        grid-template-columns: 1fr;
-        text-align: left;
-    }
-    
-    .player-form-fields label {
-        text-align: left;
-    }
-    
-    .difficulty-buttons {
-        grid-template-columns: 1fr;
-    }
-    
-    .game-buttons {
-        grid-template-columns: 1fr;
-    }
-    
-    .cf-board, .pp-board {
-        max-width: 320px;
-    }
-    
-    .cf-cell {
-        font-size: 1.2rem;
+    #pp-board {
+        grid-gap: 8px !important;
+        padding: 8px;
     }
     
     .pp-cell {
-        font-size: 1rem;
+        min-height: 50px;
+        font-size: 1rem !important;
+    }
+}
+
+@media (min-width: 769px) {
+    #pp-board {
+        grid-gap: 4px !important;
+        padding: 10px;
     }
     
-    .footer-content {
-        grid-template-columns: 1fr;
-        text-align: center;
+    .pp-cell {
+        min-height: 60px;
+        font-size: 1.2rem !important;
+    }
+    
+    .pp-cell:active {
+        transform: scale(0.98);
+    }
+}
+
+/* Enhanced Clear Flow mobile and desktop styles */
+#cf-board {
+    touch-action: pan-y; /* Allow vertical scrolling but enable horizontal swipes */
+}
+
+@media (max-width: 768px) {
+    #cf-board {
+        width: 280px !important;
+        height: 280px !important;
+        gap: 8px !important;
+    }
+    
+    .cf-cell {
+        font-size: 1.3rem !important;
+    }
+}
+
+@media (min-width: 769px) {
+    #cf-board {
+        width: 320px !important;
+        height: 320px !important;
+        gap: 12px !important;
+    }
+    
+    .cf-cell {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* Enhanced button interactions */
+.game-btn {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.game-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.game-btn:active {
+    transform: translateY(0);
+}
+
+/* Cross-device instructions */
+.device-instructions {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-blue);
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+.laptop-only {
+    display: none;
+}
+
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-only {
+        display: block;
+    }
+}
+
+@media (min-width: 769px) {
+    .laptop-only {
+        display: block;
     }
 }
 
@@ -887,12 +1070,12 @@ main {
 }
 
 @keyframes dropFall {
-    0% {
-        transform: translateY(-20px);
+    0% { 
+        transform: translateY(-100vh) rotate(0deg);
         opacity: 1;
     }
-    100% {
-        transform: translateY(100vh);
+    100% { 
+        transform: translateY(100vh) rotate(360deg);
         opacity: 0;
     }
 }
@@ -905,12 +1088,16 @@ main {
 }
 
 @keyframes celebrate {
-    0% {
-        transform: translateY(0) scale(1);
+    0% { 
+        transform: scale(0) rotate(0deg);
         opacity: 1;
     }
-    100% {
-        transform: translateY(-200px) scale(0.5);
+    50% { 
+        transform: scale(1.2) rotate(180deg);
+        opacity: 0.8;
+    }
+    100% { 
+        transform: scale(0) rotate(360deg);
         opacity: 0;
     }
 }
@@ -980,4 +1167,277 @@ main {
     0%, 100% { transform: translateX(0); }
     10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
     20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Device-specific styling */
+.mobile-device .game-btn {
+    min-height: 48px; /* Better touch targets */
+    font-size: 1.1rem;
+}
+
+.desktop-device .game-btn {
+    min-height: 40px;
+    font-size: 1rem;
+}
+
+.mobile-device #cf-board .cf-cell {
+    min-height: 65px;
+    min-width: 65px;
+}
+
+.desktop-device #cf-board .cf-cell {
+    min-height: 70px;
+    min-width: 70px;
+}
+
+.mobile-device #pp-board .pp-cell {
+    min-height: 55px;
+    min-width: 55px;
+}
+
+.desktop-device #pp-board .pp-cell {
+    min-height: 60px;
+    min-width: 60px;
+}
+
+/* Better visual feedback for desktop */
+.desktop-device .pp-cell:hover {
+    cursor: pointer;
+    border-color: var(--primary-blue) !important;
+    box-shadow: 0 0 0 2px rgba(46, 157, 247, 0.3) !important;
+}
+
+.desktop-device .cf-cell:hover {
+    cursor: default;
+    box-shadow: 0 0 0 2px rgba(46, 157, 247, 0.2);
+}
+
+/* Enhanced mobile touch feedback */
+.mobile-device .pp-cell:active {
+    transform: scale(0.95);
+    background-color: rgba(46, 157, 247, 0.1) !important;
+}
+
+.mobile-device .cf-cell:active {
+    transform: scale(0.98);
+}
+
+/* Mobile Optimizations for Game Boards */
+@media (max-width: 768px) {
+    /* Game Board Container Mobile */
+    .game-board-container {
+        min-height: 400px;
+        padding: 0.5rem;
+    }
+    
+    /* Clear the Flow Mobile Styles */
+    .cf-board {
+        width: 90vw;
+        max-width: 350px;
+        height: 90vw;
+        max-height: 350px;
+        margin: 1rem auto;
+        padding: 0.5rem;
+        gap: 8px;
+        /* Reset transform for mobile */
+        position: static;
+        left: auto;
+        transform: none;
+    }
+    
+    .cf-cell {
+        border-radius: 6px;
+        font-size: 1.2rem;
+        min-height: 60px;
+    }
+    
+    /* Puzzle Pipeline Mobile Styles */
+    .pp-board {
+        max-width: 90vw;
+        margin: 1rem auto;
+        gap: 3px;
+        padding: 0.5rem;
+        /* Reset transform for mobile */
+        position: static;
+        left: auto;
+        transform: none;
+        width: auto;
+    }
+    
+    .pp-cell {
+        min-height: 50px;
+        font-size: 1rem;
+        border-radius: 4px;
+    }
+    
+    /* Game Controls Mobile */
+    .game-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .game-btn {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Game Header Mobile */
+    .game-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    /* Game Instructions Mobile */
+    .game-instructions {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .game-instructions h4 {
+        font-size: 1.1rem;
+    }
+    
+    /* Make tap targets larger for mobile */
+    .difficulty-btn {
+        padding: 1rem;
+        margin: 0.25rem;
+    }
+    
+    .main-btn {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        min-height: 48px;
+    }
+}
+
+/* Landscape mobile optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+    .cf-board, .pp-board {
+        margin: 0.5rem auto;
+    }
+    
+    .game-header {
+        padding: 0.5rem;
+    }
+    
+    .game-instructions {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Enhanced animations for mobile feedback */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes dropFall {
+    0% { 
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+    }
+    100% { 
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+@keyframes celebrate {
+    0% { 
+        transform: scale(0) rotate(0deg);
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.2) rotate(180deg);
+        opacity: 0.8;
+    }
+    100% { 
+        transform: scale(0) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* Touch feedback styles */
+.cf-cell:active, .pp-cell:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+}
+
+/* Mobile touch highlights */
+@media (max-width: 768px) {
+    .cf-cell, .pp-cell {
+        -webkit-tap-highlight-color: rgba(46, 157, 247, 0.3);
+        tap-highlight-color: rgba(46, 157, 247, 0.3);
+    }
+    
+    .game-btn:active, .main-btn:active, .difficulty-btn:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+}
+
+/* Desktop/Laptop specific centering enhancements */
+@media (min-width: 769px) {
+    .game-board-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .pp-board {
+        /* Force absolute centering on desktop with multiple methods */
+        margin: 2rem auto !important;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+        display: grid;
+        width: fit-content;
+        /* Additional centering fallbacks */
+        margin-left: auto !important;
+        margin-right: auto !important;
+        /* Use flexbox parent container for backup centering */
+        align-self: center;
+        justify-self: center;
+    }
+    
+    .cf-board {
+        /* Ensure Clear Flow is also perfectly centered */
+        margin: 2rem auto !important;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    /* Center the entire game content */
+    .game-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .game-page > * {
+        max-width: 800px;
+        width: 100%;
+    }
+    
+    #puzzle-pipeline-page .game-board-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+    
+    #puzzle-pipeline-page .pp-board {
+        margin: 0 auto !important;
+        position: static;
+        left: auto;
+        transform: none;
+    }
 }

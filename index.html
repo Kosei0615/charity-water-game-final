@@ -41,6 +41,7 @@
                 <div class="register-actions">
                     <button type="button" id="clear-data-btn" class="secondary-btn">Clear Saved Data</button>
                     <button type="button" id="test-auth-btn" class="secondary-btn">Test Authentication</button>
+                    <button type="button" id="test-hard-mode-btn" class="secondary-btn">Test Hard Mode</button>
                     <p class="register-note">Already registered? Your data will be loaded automatically.</p>
                 </div>
             </div>
@@ -51,6 +52,9 @@
             <div class="page-header">
                 <h2>Water Adventure Hub</h2>
                 <p>Choose your difficulty and start cleaning water!</p>
+                <div id="mobile-indicator" style="display: none; background: #e3f2fd; padding: 8px; margin: 10px 0; border-radius: 5px; font-size: 14px; text-align: center;">
+                    📱 Mobile-friendly controls enabled! Use swipe gestures and touch controls.
+                </div>
                 <div id="debug-registration" style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-family: monospace; font-size: 12px;"></div>
             </div>
             
@@ -121,7 +125,18 @@
             
             <div class="game-instructions">
                 <h4>How to Play:</h4>
-                <p>Use arrow keys to move tiles. When two tiles with the same number touch, they merge into one!</p>
+                <div class="device-instructions laptop-only">
+                    <strong>🖱️ Laptop/Desktop Controls:</strong>
+                    <p>• Use arrow keys to move tiles</p>
+                    <p>• When two tiles with the same number touch, they merge into one!</p>
+                    <p>• Press R to restart the game</p>
+                </div>
+                <div class="device-instructions mobile-only">
+                    <strong>📱 Mobile Controls:</strong>
+                    <p>• Swipe in any direction to move tiles</p>
+                    <p>• When two tiles with the same number touch, they merge into one!</p>
+                    <p>• Tap Reset Game button to restart</p>
+                </div>
                 <p class="goal-instruction"><strong>🏆 Goal: Create a tile with the number <span id="cf-goal-instruction">512</span> to win!</strong></p>
             </div>
         </div>
@@ -146,7 +161,20 @@
             
             <div class="game-instructions">
                 <h4>How to Play:</h4>
-                <p>Click and drag to connect matching numbers. Fill the entire grid to complete the level!</p>
+                <div class="device-instructions laptop-only">
+                    <strong>🖱️ Laptop/Desktop Controls:</strong>
+                    <p>• Click and drag to connect matching numbers</p>
+                    <p>• Hover over cells for visual feedback</p>
+                    <p>• Press R to restart current level</p>
+                    <p>• Press Escape to return to hub</p>
+                </div>
+                <div class="device-instructions mobile-only">
+                    <strong>📱 Mobile Controls:</strong>
+                    <p>• Tap and drag to connect matching numbers</p>
+                    <p>• Use Reset Level button to restart</p>
+                    <p>• Use Back to Hub button to return</p>
+                </div>
+                <p><strong>🎯 Fill the entire grid by connecting all matching number pairs to complete the level!</strong></p>
             </div>
         </div>
     </main>
