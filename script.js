@@ -29,22 +29,58 @@ function isPlayerRegistered() {
 let currentPage = 'register-page';
 
 function showPage(pageId) {
+    console.log('==== SHOWPAGE FUNCTION CALLED ====');
     console.log('Switching to page:', pageId);
+    console.log('Current page before switch:', currentPage);
     
-    // Hide all pages
-    document.querySelectorAll('.page').forEach(page => {
+    // Hide all pages first
+    const allPages = document.querySelectorAll('.page');
+    console.log('Found', allPages.length, 'pages total');
+    
+    allPages.forEach(page => {
         page.classList.remove('active');
+        page.style.display = 'none';
+        page.style.opacity = '0';
+        page.style.transform = 'translateY(20px)';
+        console.log('Hiding page:', page.id);
     });
     
     // Show target page
     const targetPage = document.getElementById(pageId);
     if (targetPage) {
+        console.log('Target page found:', pageId);
+        console.log('Target page classes before:', targetPage.classList.toString());
+        
+        // Force page activation
         targetPage.classList.add('active');
+        targetPage.style.display = 'block';
+        targetPage.style.opacity = '1';
+        targetPage.style.transform = 'translateY(0)';
+        
+        // Update current page
         currentPage = pageId;
+        
+        console.log('Target page classes after:', targetPage.classList.toString());
         console.log('Successfully switched to:', pageId);
+        console.log('Current page is now:', currentPage);
+        
+        // Force a repaint
+        setTimeout(() => {
+            targetPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+        
     } else {
         console.error('Page not found:', pageId);
+        console.log('Available pages:', Array.from(document.querySelectorAll('.page')).map(p => p.id));
+        
+        // Fallback to hub page if target not found
+        if (pageId !== 'hub-page') {
+            console.log('Falling back to hub-page...');
+            showPage('hub-page');
+        }
     }
+    
+    console.log('==== SHOWPAGE FUNCTION COMPLETE ====');
 }
 
 // Difficulty system
@@ -474,44 +510,78 @@ function initializeDifficultySystem() {
 function initializeGameButtons() {
     console.log('Initializing game buttons with authentication guards...');
     
-    const playButtons = {
-        'play-clear-flow': () => {
+    // Remove any existing event listeners first
+    const clearFlowBtn = document.getElementById('play-clear-flow');
+    const puzzlePipelineBtn = document.getElementById('play-puzzle-pipeline');
+    
+    if (clearFlowBtn) {
+        // Clone node to remove all event listeners
+        const newClearFlowBtn = clearFlowBtn.cloneNode(true);
+        clearFlowBtn.parentNode.replaceChild(newClearFlowBtn, clearFlowBtn);
+        
+        newClearFlowBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             console.log('Clear Flow button clicked - checking authentication...');
+            
             if (!isPlayerRegistered()) {
                 console.log('Player not registered, blocking game access');
                 alert('Please register first to play the game!');
                 showPage('register-page');
                 return;
             }
+            
             console.log('Player authenticated, starting Clear Flow game');
+            console.log('Navigating to clear-flow-page...');
             showPage('clear-flow-page');
-            startClearFlowGame();
-        },
-        'play-puzzle-pipeline': () => {
+            
+            // Small delay to ensure page is shown before starting game
+            setTimeout(() => {
+                console.log('Starting Clear Flow game...');
+                startClearFlowGame();
+            }, 100);
+            
+            sounds.click();
+        });
+        console.log('Clear Flow button initialized successfully');
+    } else {
+        console.error('Clear Flow button not found!');
+    }
+    
+    if (puzzlePipelineBtn) {
+        // Clone node to remove all event listeners
+        const newPuzzlePipelineBtn = puzzlePipelineBtn.cloneNode(true);
+        puzzlePipelineBtn.parentNode.replaceChild(newPuzzlePipelineBtn, puzzlePipelineBtn);
+        
+        newPuzzlePipelineBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             console.log('Puzzle Pipeline button clicked - checking authentication...');
+            
             if (!isPlayerRegistered()) {
                 console.log('Player not registered, blocking game access');
                 alert('Please register first to play the game!');
                 showPage('register-page');
                 return;
             }
+            
             console.log('Player authenticated, starting Puzzle Pipeline game');
             console.log('Current difficulty before starting:', currentDifficulty);
+            console.log('Navigating to puzzle-pipeline-page...');
             showPage('puzzle-pipeline-page');
-            // Start the game immediately after page switch
-            startPuzzlePipelineGame();
-        }
-    };
-    
-    Object.entries(playButtons).forEach(([buttonId, handler]) => {
-        const button = document.getElementById(buttonId);
-        if (button) {
-            button.addEventListener('click', () => {
-                console.log('Game button clicked:', buttonId);
-                handler();
-            });
-        }
-    });
+            
+            // Small delay to ensure page is shown before starting game
+            setTimeout(() => {
+                console.log('Starting Puzzle Pipeline game...');
+                startPuzzlePipelineGame();
+            }, 100);
+            
+            sounds.click();
+        });
+        console.log('Puzzle Pipeline button initialized successfully');
+    } else {
+        console.error('Puzzle Pipeline button not found!');
+    }
 }
 
 // Initialize back buttons with authentication guards
@@ -520,16 +590,45 @@ function initializeBackButtons() {
     backButtons.forEach(buttonId => {
         const button = document.getElementById(buttonId);
         if (button) {
-            button.addEventListener('click', () => {
+            // Remove existing event listeners by cloning
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+            
+            newButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 console.log('Back button clicked:', buttonId);
+                console.log('Current page before navigation:', currentPage);
+                
                 if (!isPlayerRegistered()) {
                     alert('Please register first!');
                     showPage('register-page');
                     return;
                 }
+                
+                // Force navigation to hub page
+                console.log('Navigating to hub-page...');
                 showPage('hub-page');
+                
+                // Verify the page was changed
+                setTimeout(() => {
+                    console.log('Current page after navigation:', currentPage);
+                    const hubPage = document.getElementById('hub-page');
+                    if (hubPage) {
+                        console.log('Hub page active class:', hubPage.classList.contains('active'));
+                        if (!hubPage.classList.contains('active')) {
+                            console.warn('Hub page not active, forcing activation...');
+                            hubPage.classList.add('active');
+                            hubPage.style.display = 'block';
+                        }
+                    }
+                }, 100);
+                
                 sounds.click();
             });
+            console.log('Back button initialized:', buttonId);
+        } else {
+            console.error('Back button not found:', buttonId);
         }
     });
 }
