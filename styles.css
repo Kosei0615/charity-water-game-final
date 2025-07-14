@@ -908,6 +908,9 @@ main {
     /* Enhanced interaction styles */
     position: relative;
     overflow: hidden;
+    /* Mobile-friendly touch handling */
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(46, 157, 247, 0.3);
 }
 
 .pp-cell::before {
@@ -923,7 +926,8 @@ main {
     pointer-events: none;
 }
 
-.pp-cell:hover::before {
+.pp-cell:hover::before,
+.pp-cell:active::before {
     opacity: 1;
 }
 
@@ -937,13 +941,23 @@ main {
 /* Better responsive design for game boards */
 @media (max-width: 768px) {
     #pp-board {
-        grid-gap: 8px !important;
-        padding: 8px;
+        grid-gap: 6px !important;
+        padding: 0.75rem !important;
+        max-width: 90vw !important;
+        width: 90vw !important;
+        position: static !important;
+        left: auto !important;
+        transform: none !important;
     }
     
     .pp-cell {
-        min-height: 50px;
-        font-size: 1rem !important;
+        min-height: 55px !important;
+        min-width: 55px !important;
+        font-size: 1.1rem !important;
+        touch-action: manipulation;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
     }
 }
 
@@ -1251,23 +1265,41 @@ main {
         min-height: 60px;
     }
     
-    /* Puzzle Pipeline Mobile Styles */
+    /* Puzzle Pipeline Mobile Styles - FIXED */
     .pp-board {
-        max-width: 90vw;
-        margin: 1rem auto;
-        gap: 3px;
-        padding: 0.5rem;
-        /* Reset transform for mobile */
-        position: static;
-        left: auto;
-        transform: none;
-        width: auto;
+        max-width: 90vw !important;
+        width: 90vw !important;
+        margin: 1rem auto !important;
+        gap: 6px !important;
+        padding: 0.75rem !important;
+        /* Reset all transform properties for mobile */
+        position: static !important;
+        left: auto !important;
+        transform: none !important;
+        /* Ensure mobile responsive sizing */
+        grid-template-columns: repeat(var(--grid-size, 4), 1fr) !important;
+    }
+    
+    /* Override all Puzzle Pipeline specific rules for mobile */
+    #puzzle-pipeline-page .pp-board {
+        max-width: 90vw !important;
+        width: 90vw !important;
+        margin: 0.5rem auto !important;
+        position: static !important;
+        left: auto !important;
+        transform: none !important;
+        align-self: center !important;
+        justify-self: center !important;
     }
     
     .pp-cell {
-        min-height: 50px;
-        font-size: 1rem;
+        min-height: 55px !important;
+        min-width: 55px !important;
+        font-size: 1.1rem !important;
         border-radius: 4px;
+        /* Enhanced touch targets */
+        padding: 4px;
+        touch-action: manipulation;
     }
     
     /* Game Controls Mobile */
@@ -1372,12 +1404,37 @@ main {
 @media (max-width: 768px) {
     .cf-cell, .pp-cell {
         -webkit-tap-highlight-color: rgba(46, 157, 247, 0.3);
-        tap-highlight-color: rgba(46, 157, 247, 0.3);
+        /* Enhanced mobile touch feedback */
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+    }
+    
+    .pp-cell:active {
+        transform: scale(0.95) !important;
+        background-color: rgba(46, 157, 247, 0.2) !important;
+        transition: all 0.1s ease;
+    }
+    
+    .cf-cell:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
     }
     
     .game-btn:active, .main-btn:active, .difficulty-btn:active {
         transform: scale(0.98);
         transition: transform 0.1s ease;
+    }
+    
+    /* Ensure mobile board is responsive */
+    #puzzle-pipeline-page {
+        touch-action: manipulation;
+    }
+    
+    #puzzle-pipeline-page .pp-board {
+        touch-action: none;
+        overflow: visible;
     }
 }
 
