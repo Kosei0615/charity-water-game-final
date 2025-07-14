@@ -720,13 +720,17 @@ function initializeClearFlowBoard() {
     const boardElement = document.getElementById('cf-board');
     if (boardElement) {
         boardElement.innerHTML = '';
-        // Use CSS classes instead of inline styles for better alignment
         boardElement.className = 'cf-board';
         
-        // Only add mobile-specific properties if needed, let CSS handle centering
+        // Enhanced mobile centering - let CSS handle positioning
         if (isMobileDevice()) {
-            // Only set essential mobile properties, not positioning
-            boardElement.style.fontSize = '1.2rem';
+            console.log('Initializing Clear Flow for mobile with enhanced centering');
+            // Remove any inline styles that might interfere with CSS centering
+            boardElement.style.position = '';
+            boardElement.style.left = '';
+            boardElement.style.transform = '';
+            boardElement.style.margin = '';
+            // Let CSS handle all positioning
         }
         
         for (let i = 0; i < 16; i++) {
@@ -736,8 +740,9 @@ function initializeClearFlowBoard() {
             
             // Mobile optimizations for cells only
             if (isMobileDevice()) {
-                cell.style.minHeight = '60px';
+                cell.style.minHeight = '50px';
                 cell.style.borderRadius = '6px';
+                cell.style.fontSize = '1.5rem';
             }
             
             boardElement.appendChild(cell);
@@ -1346,28 +1351,35 @@ function loadPuzzleLevel(levelIndex) {
         return;
     }
     
-    // Mobile responsive sizing - IMPROVED FOR CONSISTENCY
+    // Enhanced mobile responsive sizing with perfect centering
     if (isMobileDevice()) {
-        console.log('Mobile device detected, applying mobile sizing...');
+        console.log('Mobile device detected, applying mobile sizing with perfect centering...');
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
-        const maxBoardSize = Math.min(screenWidth * 0.9, screenHeight * 0.5); // Fit within screen
+        const maxBoardSize = Math.min(screenWidth * 0.85, screenHeight * 0.5); // Slightly smaller for better centering
         const cellSize = Math.floor(maxBoardSize / size) - 4; // Account for gaps
         
         console.log(`Screen: ${screenWidth}x${screenHeight}, Board size: ${maxBoardSize}, Cell size: ${cellSize}`);
         
         // Ensure minimum cell size for playability
-        const finalCellSize = Math.max(cellSize, 40);
+        const finalCellSize = Math.max(cellSize, 35);
         
         boardDiv.style.gridTemplateColumns = `repeat(${size}, ${finalCellSize}px)`;
         boardDiv.style.gridTemplateRows = `repeat(${size}, ${finalCellSize}px)`;
         boardDiv.style.gap = '3px';
-        boardDiv.style.maxWidth = `${size * finalCellSize + (size - 1) * 3}px`;
         
-        // Ensure board is centered and maintains aspect ratio
-        boardDiv.style.margin = '0 auto';
-        boardDiv.style.justifySelf = 'center';
-        boardDiv.style.aspectRatio = '1';
+        // Calculate exact board width and center it
+        const boardWidth = size * finalCellSize + (size - 1) * 3;
+        boardDiv.style.width = `${boardWidth}px`;
+        boardDiv.style.maxWidth = `${boardWidth}px`;
+        
+        // Remove any positioning that might interfere with CSS centering
+        boardDiv.style.position = '';
+        boardDiv.style.left = '';
+        boardDiv.style.transform = '';
+        boardDiv.style.margin = '';
+        
+        console.log(`Final board dimensions: ${boardWidth}px x ${boardWidth}px`);
     } else {
         console.log('Desktop device detected, using standard sizing...');
         boardDiv.style.gridTemplateColumns = `repeat(${size}, 60px)`;

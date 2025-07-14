@@ -712,7 +712,7 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0;
+    margin: 0;
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     border-radius: 16px;
@@ -975,4 +975,92 @@ main {
     50% { transform: scale(1.1) rotate(2deg); }
     75% { transform: scale(1.05) rotate(-1deg); }
     100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Enhanced Mobile Centering Fixes */
+@media (max-width: 768px) {
+    /* Clear the Flow - Perfect Mobile Centering */
+    #clear-flow-page .game-board-container {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100vw !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .cf-board {
+        width: 85vw !important;
+        height: 85vw !important;
+        max-width: 350px !important;
+        max-height: 350px !important;
+        margin: 1rem auto !important;
+        padding: 0.5rem !important;
+        gap: 6px !important;
+        /* Triple centering for bulletproof mobile centering */
+        position: relative !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        /* Flexbox backup */
+        display: grid !important;
+        place-self: center !important;
+        justify-self: center !important;
+        align-self: center !important;
+    }
+    
+    #cf-board {
+        width: 85vw !important;
+        height: 85vw !important;
+        max-width: 350px !important;
+        max-height: 350px !important;
+        margin: 0 auto !important;
+        position: relative !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
+    
+    /* Puzzle Pipeline - Perfect Mobile Centering */
+    #puzzle-pipeline-page .game-board-container {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100vw !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .pp-board {
+        margin: 1rem auto !important;
+        padding: 0.5rem !important;
+        /* Perfect centering with multiple fallbacks */
+        position: relative !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        display: grid !important;
+        place-self: center !important;
+        justify-self: center !important;
+        align-self: center !important;
+        /* Ensure no overflow */
+        width: fit-content !important;
+        max-width: 90vw !important;
+    }
+    
+    #pp-board {
+        margin: 0 auto !important;
+        position: relative !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: fit-content !important;
+    }
+    
+    /* Force centering for game pages */
+    .game-page {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        width: 100vw !important;
+        overflow-x: hidden !important;
+    }
 }
