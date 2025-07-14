@@ -1339,6 +1339,10 @@ function loadPuzzleLevel(levelIndex) {
     const boardDiv = document.getElementById('pp-board');
     if (!boardDiv) {
         console.error('Puzzle Pipeline board element not found!');
+        showMessage('pp-message', '❌ Game board not found. Please refresh the page.', 'error');
+        setTimeout(() => {
+            showPage('hub-page');
+        }, 2000);
         return;
     }
     
@@ -1376,13 +1380,22 @@ function loadPuzzleLevel(levelIndex) {
     drawBoard();
 
     function drawBoard() {
+        console.log('=== DRAWING BOARD ===');
+        console.log('Current level paths:', levelPaths);
+        console.log('Current drawing path:', levelCurrentPath);
+        console.log('Is mobile device:', isMobileDevice());
+        
+        // Clear and rebuild the board
         boardDiv.innerHTML = '';
+        
         for (let r = 0; r < size; r++) {
             for (let c = 0; c < size; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'pp-cell';
                 cell.dataset.row = r;
                 cell.dataset.col = c;
+                
+                // Apply consistent styling regardless of device
                 cell.style.cssText = `
                     background: white;
                     border-radius: 8px;
@@ -1400,23 +1413,37 @@ function loadPuzzleLevel(levelIndex) {
                     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 `;
                 
-                // Add hover effects for better laptop experience
-                cell.addEventListener('mouseenter', () => {
-                    if (!solved && !isDrawing) {
-                        cell.style.borderColor = '#2E9DF7';
-                        cell.style.transform = 'scale(1.02)';
-                        cell.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
-                    }
-                });
+                // Mobile-specific touch optimizations
+                if (isMobileDevice()) {
+                    cell.style.touchAction = 'none';
+                    cell.style.webkitTouchCallout = 'none';
+                    cell.style.webkitUserSelect = 'none';
+                    cell.style.userSelect = 'none';
+                    cell.style.transform = 'translateZ(0)';
+                    cell.style.backfaceVisibility = 'hidden';
+                    cell.style.fontSize = '1rem';
+                }
                 
-                cell.addEventListener('mouseleave', () => {
-                    if (!solved && !isDrawing) {
-                        cell.style.borderColor = '#ddd';
-                        cell.style.transform = 'scale(1)';
-                        cell.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                    }
-                });
+                // Add hover effects for desktop only
+                if (!isMobileDevice()) {
+                    cell.addEventListener('mouseenter', () => {
+                        if (!solved && !isDrawing) {
+                            cell.style.borderColor = '#2E9DF7';
+                            cell.style.transform = 'scale(1.02)';
+                            cell.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+                        }
+                    });
+                    
+                    cell.addEventListener('mouseleave', () => {
+                        if (!solved && !isDrawing) {
+                            cell.style.borderColor = '#ddd';
+                            cell.style.transform = 'scale(1)';
+                            cell.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                        }
+                    });
+                }
                 
+                // Set cell content and colors
                 if (grid[r][c] > 0) {
                     cell.textContent = grid[r][c];
                     cell.style.backgroundColor = getColor(grid[r][c]);
@@ -1428,6 +1455,7 @@ function loadPuzzleLevel(levelIndex) {
                     for (let num in levelPaths) {
                         if (levelPaths[num].some(([pr, pc]) => pr === r && pc === c)) {
                             cell.style.backgroundColor = getColor(num);
+                            cell.style.color = '#fff';
                             inPath = true;
                             break;
                         }
@@ -1436,63 +1464,60 @@ function loadPuzzleLevel(levelIndex) {
                     // Check if this cell is part of the current path being drawn
                     if (!inPath && levelCurrentPath && levelCurrentPath.path.some(([pr, pc]) => pr === r && pc === c)) {
                         cell.style.backgroundColor = getColor(levelCurrentPath.number);
-                        cell.style.opacity = '0.7';
+                        cell.style.color = '#fff';
+                        cell.style.opacity = '0.8';
+                        cell.classList.add('path-active');
                         inPath = true;
                     }
                     
                     if (!inPath) {
                         cell.style.backgroundColor = 'white';
+                        cell.style.color = '#2E9DF7';
                         cell.style.opacity = '1';
+                        // Remove any active classes
+                        cell.classList.remove('path-active', 'path-preview');
                     }
                 }
                 
+                // Add event listeners
                 cell.addEventListener('mousedown', startPath);
                 cell.addEventListener('mouseenter', continuePath);
                 cell.addEventListener('mouseup', endPath);
                 
-                // Touch events for mobile - enhanced
+                // Enhanced touch events for mobile
                 cell.addEventListener('touchstart', startPath, { passive: false });
                 cell.addEventListener('touchmove', handleTouchMove, { passive: false });
                 cell.addEventListener('touchend', endPath, { passive: false });
-                
-                // Mobile-specific optimizations - but maintain desktop appearance
-                if (isMobileDevice()) {
-                    // Keep the same visual style but optimize for touch
-                    cell.style.cursor = 'pointer';
-                    cell.style.webkitTouchCallout = 'none';
-                    cell.style.webkitUserSelect = 'none';
-                    cell.style.userSelect = 'none';
-                    cell.style.transform = 'translateZ(0)';
-                    cell.style.backfaceVisibility = 'hidden';
-                    // Don't override the desktop styling for consistency
-                } else {
-                    // Desktop optimizations
-                    cell.style.cursor = 'pointer';
-                }
                 
                 boardDiv.appendChild(cell);
             }
         }
         
-        // Global mouse up to stop drawing when mouse leaves the board
-        document.addEventListener('mouseup', (e) => {
-            if (isDrawing) {
-                console.log('Global mouseup detected, ending path');
-                isDrawing = false;
-                levelCurrentPath = null;
-                drawBoard();
-            }
-        });
+        // Global event listeners for cleanup
+        document.addEventListener('mouseup', globalEndPath);
+        document.addEventListener('touchend', globalEndPath);
+        boardDiv.addEventListener('mouseleave', boardMouseLeave);
         
-        // Global mouseleave for the board to handle edge cases
-        boardDiv.addEventListener('mouseleave', () => {
-            if (isDrawing) {
-                console.log('Mouse left board area, ending path');
-                isDrawing = false;
-                levelCurrentPath = null;
-                drawBoard();
-            }
-        });
+        console.log('Board drawing complete');
+    }
+
+    // Global event handlers for cleanup
+    function globalEndPath(e) {
+        if (isDrawing && levelCurrentPath) {
+            console.log('Global end path triggered');
+            isDrawing = false;
+            levelCurrentPath = null;
+            drawBoard();
+        }
+    }
+
+    function boardMouseLeave() {
+        if (isDrawing && levelCurrentPath) {
+            console.log('Mouse/touch left board area');
+            isDrawing = false;
+            levelCurrentPath = null;
+            drawBoard();
+        }
     }
 
     function startPath(e) {
@@ -1500,7 +1525,7 @@ function loadPuzzleLevel(levelIndex) {
         e.preventDefault();
         e.stopPropagation();
         
-        console.log('=== START PATH ===');
+        console.log('=== START PATH ENHANCED ===');
         console.log('Event type:', e.type);
         console.log('Is mobile device:', isMobileDevice());
         
@@ -1512,7 +1537,7 @@ function loadPuzzleLevel(levelIndex) {
             console.log('Touch event - target found:', target ? target.classList.toString() : 'none');
         }
         
-        if (!target || !target.dataset) {
+        if (!target || !target.dataset || !target.dataset.row || !target.dataset.col) {
             console.log('No target or dataset found');
             return;
         }
@@ -1521,41 +1546,47 @@ function loadPuzzleLevel(levelIndex) {
         const c = parseInt(target.dataset.col);
         
         console.log('Cell coordinates:', r, c);
+        console.log('Cell value:', grid[r][c]);
         
         if (isNaN(r) || isNaN(c)) {
             console.log('Invalid coordinates');
             return;
         }
         
+        // Only start path from numbered cells (endpoints)
         if (grid[r][c] > 0) {
             const num = grid[r][c];
             levelCurrentPath = { number: num, path: [[r, c]] };
             isDrawing = true;
             sounds.click();
-            drawBoard(); // Redraw to show current path
             
             console.log('Started path for number:', num);
+            console.log('Path initialized:', levelCurrentPath);
             
             // Enhanced visual feedback for both mobile and desktop
             if (isMobileDevice()) {
-                target.style.transform = 'scale(1.05)';
-                target.style.backgroundColor = 'rgba(46, 157, 247, 0.2)';
-                // Add haptic feedback
+                target.style.transform = 'scale(1.1)';
+                target.style.boxShadow = '0 0 10px rgba(46, 157, 247, 0.5)';
+                // Add strong haptic feedback for start
                 if (navigator.vibrate) {
-                    navigator.vibrate(10);
+                    navigator.vibrate(15);
                 }
             } else {
-                target.style.transform = 'scale(1.1)';
+                target.style.transform = 'scale(1.15)';
+                target.style.boxShadow = '0 0 15px rgba(46, 157, 247, 0.7)';
             }
             
             setTimeout(() => {
                 if (target.style) {
                     target.style.transform = '';
-                    target.style.backgroundColor = '';
+                    target.style.boxShadow = '';
                 }
-            }, 200);
+            }, 300);
+            
+            // Immediately redraw to show starting state
+            drawBoard();
         } else {
-            console.log('Empty cell clicked');
+            console.log('Empty cell clicked - cannot start path');
         }
     }
 
@@ -1637,8 +1668,9 @@ function loadPuzzleLevel(levelIndex) {
         e.preventDefault();
         e.stopPropagation();
         
-        console.log('=== END PATH ===');
+        console.log('=== END PATH ENHANCED ===');
         console.log('Event type:', e.type);
+        console.log('Current path:', levelCurrentPath);
         
         // Handle both mouse and touch events
         let target = e.target;
@@ -1648,7 +1680,7 @@ function loadPuzzleLevel(levelIndex) {
             console.log('Touch end - target found:', target ? target.classList.toString() : 'none');
         }
         
-        if (!target || !target.dataset) {
+        if (!target || !target.dataset || !target.dataset.row || !target.dataset.col) {
             // Invalid end point, clear current path
             console.log('Invalid end point, clearing path');
             isDrawing = false;
@@ -1660,7 +1692,8 @@ function loadPuzzleLevel(levelIndex) {
         const r = parseInt(target.dataset.row);
         const c = parseInt(target.dataset.col);
         
-        console.log('End path at cell:', r, c);
+        console.log('End path at cell:', r, c, 'Cell value:', grid[r][c]);
+        console.log('Path length:', levelCurrentPath.path.length);
         
         if (isNaN(r) || isNaN(c)) {
             console.log('Invalid coordinates, clearing path');
@@ -1670,27 +1703,33 @@ function loadPuzzleLevel(levelIndex) {
             return;
         }
         
-        // Check if ending on a matching endpoint
+        // Check if ending on a matching endpoint and path has more than one cell
         if (grid[r][c] === levelCurrentPath.number && levelCurrentPath.path.length > 1) {
-            // Valid connection
+            // Valid connection - ensure the ending cell is included in path
+            const lastCell = levelCurrentPath.path[levelCurrentPath.path.length - 1];
+            if (lastCell[0] !== r || lastCell[1] !== c) {
+                levelCurrentPath.path.push([r, c]);
+            }
+            
             levelPaths[levelCurrentPath.number] = [...levelCurrentPath.path];
             sounds.success();
             
             console.log(`✅ Valid connection made for number ${levelCurrentPath.number}`);
             console.log('Current level paths:', Object.keys(levelPaths));
+            console.log('Connection path:', levelPaths[levelCurrentPath.number]);
             
             // Enhanced celebration effect for successful connection
             if (target.style) {
                 if (isMobileDevice()) {
                     target.style.animation = 'pulse 0.5s ease-in-out';
-                    target.style.transform = 'scale(1.1)';
+                    target.style.transform = 'scale(1.2)';
                     // Strong haptic feedback for success
                     if (navigator.vibrate) {
-                        navigator.vibrate([50, 25, 50]);
+                        navigator.vibrate([100, 50, 100]);
                     }
                 } else {
                     target.style.animation = 'pulse 0.5s ease-in-out';
-                    target.style.transform = 'scale(1.15)';
+                    target.style.transform = 'scale(1.2)';
                 }
                 
                 setTimeout(() => {
@@ -1707,11 +1746,12 @@ function loadPuzzleLevel(levelIndex) {
         } else {
             // Invalid connection, clear path
             console.log(`❌ Invalid connection attempt for number ${levelCurrentPath.number}, path length: ${levelCurrentPath.path.length}`);
+            console.log(`Target cell value: ${grid[r][c]}, Expected: ${levelCurrentPath.number}`);
             sounds.click();
             
             // Feedback for invalid connection
             if (isMobileDevice() && navigator.vibrate) {
-                navigator.vibrate(20); // Short vibration for invalid move
+                navigator.vibrate(50); // Medium vibration for invalid move
             }
         }
         
@@ -1725,38 +1765,54 @@ function loadPuzzleLevel(levelIndex) {
         e.preventDefault();
         e.stopPropagation();
         
-        console.log('=== TOUCH MOVE ===');
+        console.log('=== TOUCH MOVE ENHANCED ===');
         
         const touch = e.touches[0];
         const element = document.elementFromPoint(touch.clientX, touch.clientY);
         
         console.log('Touch move - element found:', element ? element.classList.toString() : 'none');
         
-        if (element && element.classList.contains('pp-cell')) {
-            // Enhanced visual feedback for touch
-            element.style.transform = 'scale(1.02)';
-            element.style.backgroundColor = 'rgba(46, 157, 247, 0.1)';
-            setTimeout(() => {
-                if (element.style) {
-                    element.style.transform = '';
-                    element.style.backgroundColor = '';
+        if (element && element.classList.contains('pp-cell') && element.dataset.row && element.dataset.col) {
+            const r = parseInt(element.dataset.row);
+            const c = parseInt(element.dataset.col);
+            
+            console.log('Touch move to cell:', r, c);
+            
+            // Check if this is a valid adjacent cell
+            const lastPos = levelCurrentPath.path[levelCurrentPath.path.length - 1];
+            const distance = Math.abs(r - lastPos[0]) + Math.abs(c - lastPos[1]);
+            
+            if (distance === 1) { // Adjacent cell
+                if (grid[r][c] === 0 || grid[r][c] === levelCurrentPath.number) {
+                    // Check if not already in current path
+                    if (!levelCurrentPath.path.some(([pr, pc]) => pr === r && pc === c)) {
+                        levelCurrentPath.path.push([r, c]);
+                        
+                        console.log('Added cell to path:', r, c);
+                        console.log('Current path length:', levelCurrentPath.path.length);
+                        
+                        // Immediate visual feedback for mobile
+                        element.style.backgroundColor = getColor(levelCurrentPath.number);
+                        element.style.color = '#fff';
+                        element.style.opacity = '0.8';
+                        element.style.transform = 'scale(1.05)';
+                        
+                        // Add haptic feedback
+                        if (navigator.vibrate && isMobileDevice()) {
+                            navigator.vibrate(5);
+                        }
+                        
+                        // Reset visual feedback
+                        setTimeout(() => {
+                            if (element.style) {
+                                element.style.transform = '';
+                            }
+                        }, 100);
+                        
+                        // Redraw board to show updated path
+                        drawBoard();
+                    }
                 }
-            }, 100);
-            
-            // Call continuePath with synthetic event
-            const syntheticEvent = {
-                target: element,
-                type: 'touchmove',
-                touches: e.touches,
-                preventDefault: () => {},
-                stopPropagation: () => {}
-            };
-            
-            continuePath(syntheticEvent);
-            
-            // Add haptic feedback for mobile
-            if (navigator.vibrate && isMobileDevice()) {
-                navigator.vibrate(5);
             }
         }
     }
@@ -1804,6 +1860,15 @@ function loadPuzzleLevel(levelIndex) {
                 sounds.success();
                 domEffects.createCelebration();
                 
+                // Add visual celebration to the board
+                const boardDiv = document.getElementById('pp-board');
+                if (boardDiv) {
+                    boardDiv.classList.add('level-complete');
+                    setTimeout(() => {
+                        boardDiv.classList.remove('level-complete');
+                    }, 1000);
+                }
+                
                 console.log(`=== LEVEL COMPLETED ===`);
                 console.log(`Completed level: ${puzzlePipelineCurrentLevel + 1}`);
                 console.log(`Current level index: ${puzzlePipelineCurrentLevel}`);
@@ -1840,7 +1905,20 @@ function loadPuzzleLevel(levelIndex) {
                         
                         // Small delay to ensure page is ready
                         setTimeout(() => {
+                            // Add loading animation
+                            const boardDiv = document.getElementById('pp-board');
+                            if (boardDiv) {
+                                boardDiv.classList.add('level-loading');
+                            }
+                            
                             loadPuzzleLevel(nextLevel);
+                            
+                            // Remove loading animation after level loads
+                            setTimeout(() => {
+                                if (boardDiv) {
+                                    boardDiv.classList.remove('level-loading');
+                                }
+                            }, 500);
                         }, 100);
                     }, 2000);
                 }
