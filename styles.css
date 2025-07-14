@@ -1144,4 +1144,105 @@ main {
     .cf-cell:active, .pp-cell:active {
         transform: translateZ(0) scale(0.98) !important;
     }
+    
+    /* Register Page Mobile Centering */
+    .register-page {
+        width: 100vw !important;
+        max-width: none !important;
+        padding: 1rem !important;
+        margin: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        min-height: calc(100vh - 200px) !important;
+    }
+    
+    .register-welcome {
+        width: 90vw !important;
+        max-width: 400px !important;
+        margin: 0 auto 1rem auto !important;
+        padding: 1.5rem !important;
+        text-align: center !important;
+    }
+    
+    .card {
+        width: 90vw !important;
+        max-width: 400px !important;
+        margin: 0 auto !important;
+        padding: 1.5rem !important;
+        box-sizing: border-box !important;
+    }
+    
+    .player-form {
+        width: 100% !important;
+        text-align: center !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .player-form-fields {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+        align-items: stretch !important;
+        max-width: none !important;
+        width: 100% !important;
+        margin: 0 0 1.5rem 0 !important;
+    }
+    
+    .player-form-fields label {
+        text-align: center !important;
+        font-weight: 600 !important;
+        color: var(--text-dark) !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .player-form-fields input {
+        width: 100% !important;
+        padding: 1rem !important;
+        border: 2px solid rgba(46, 157, 247, 0.2) !important;
+        border-radius: 12px !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        font-size: 1rem !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+    }
+    
+    .player-form-fields input:focus {
+        outline: none !important;
+        border-color: var(--primary-blue) !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        box-shadow: 0 0 0 4px rgba(46, 157, 247, 0.1) !important;
+    }
+    
+    .main-btn {
+        width: 100% !important;
+        max-width: 300px !important;
+        margin: 0 auto !important;
+        padding: 1rem 2rem !important;
+        font-size: 1.1rem !important;
+        display: block !important;
+    }
+    
+    .register-actions {
+        width: 100% !important;
+        text-align: center !important;
+        margin-top: 1rem !important;
+        padding-top: 1rem !important;
+    }
+    
+    .secondary-btn {
+        width: 100% !important;
+        max-width: 280px !important;
+        margin: 0.5rem auto !important;
+        padding: 0.75rem 1.5rem !important;
+        display: block !important;
+    }
+    
+    .register-note {
+        text-align: center !important;
+        margin: 1rem 0 !important;
+        font-size: 0.9rem !important;
+    }
 }
