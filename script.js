@@ -1330,15 +1330,28 @@ function loadPuzzleLevel(levelIndex) {
         return;
     }
     
-    boardDiv.style.gridTemplateColumns = `repeat(${size}, 60px)`;
-    boardDiv.style.gridTemplateRows = `repeat(${size}, 60px)`;
-    
     // Mobile responsive sizing - but keep centering intact
     if (isMobileDevice()) {
-        const cellSize = Math.min(50, Math.floor(window.innerWidth * 0.12));
+        console.log('Mobile device detected, applying mobile sizing...');
+        const screenWidth = window.innerWidth;
+        const availableWidth = screenWidth * 0.9; // 90% of screen width
+        const cellSize = Math.min(50, Math.floor(availableWidth / size));
+        
+        console.log(`Screen width: ${screenWidth}, Available: ${availableWidth}, Cell size: ${cellSize}`);
+        
         boardDiv.style.gridTemplateColumns = `repeat(${size}, ${cellSize}px)`;
         boardDiv.style.gridTemplateRows = `repeat(${size}, ${cellSize}px)`;
         boardDiv.style.gap = '3px';
+        boardDiv.style.maxWidth = `${availableWidth}px`;
+        
+        // Ensure board is centered
+        boardDiv.style.margin = '0 auto';
+        boardDiv.style.justifySelf = 'center';
+    } else {
+        console.log('Desktop device detected, using standard sizing...');
+        boardDiv.style.gridTemplateColumns = `repeat(${size}, 60px)`;
+        boardDiv.style.gridTemplateRows = `repeat(${size}, 60px)`;
+        boardDiv.style.gap = '6px';
     }
     
     // Let CSS handle positioning and centering
@@ -1460,20 +1473,34 @@ function loadPuzzleLevel(levelIndex) {
     function startPath(e) {
         if (solved) return;
         e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('=== START PATH ===');
+        console.log('Event type:', e.type);
+        console.log('Is mobile device:', isMobileDevice());
         
         // Handle both mouse and touch events
         let target = e.target;
         if (e.type === 'touchstart' && e.touches && e.touches.length > 0) {
             const touch = e.touches[0];
             target = document.elementFromPoint(touch.clientX, touch.clientY);
+            console.log('Touch event - target found:', target ? target.classList.toString() : 'none');
         }
         
-        if (!target || !target.dataset) return;
+        if (!target || !target.dataset) {
+            console.log('No target or dataset found');
+            return;
+        }
         
         const r = parseInt(target.dataset.row);
         const c = parseInt(target.dataset.col);
         
-        if (isNaN(r) || isNaN(c)) return;
+        console.log('Cell coordinates:', r, c);
+        
+        if (isNaN(r) || isNaN(c)) {
+            console.log('Invalid coordinates');
+            return;
+        }
         
         if (grid[r][c] > 0) {
             const num = grid[r][c];
@@ -1482,31 +1509,61 @@ function loadPuzzleLevel(levelIndex) {
             sounds.click();
             drawBoard(); // Redraw to show current path
             
-            // Add visual feedback for better laptop experience
-            target.style.transform = 'scale(1.1)';
+            console.log('Started path for number:', num);
+            
+            // Enhanced visual feedback for both mobile and desktop
+            if (isMobileDevice()) {
+                target.style.transform = 'scale(1.05)';
+                target.style.backgroundColor = 'rgba(46, 157, 247, 0.2)';
+                // Add haptic feedback
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+            } else {
+                target.style.transform = 'scale(1.1)';
+            }
+            
             setTimeout(() => {
-                if (target.style) target.style.transform = '';
+                if (target.style) {
+                    target.style.transform = '';
+                    target.style.backgroundColor = '';
+                }
             }, 200);
+        } else {
+            console.log('Empty cell clicked');
         }
     }
 
     function continuePath(e) {
         if (!levelCurrentPath || solved || !isDrawing) return;
         e.preventDefault();
+        e.stopPropagation();
         
-        // Handle both mouse and touch events
+        console.log('=== CONTINUE PATH ===');
+        console.log('Event type:', e.type);
+        
+        // Handle both mouse and touch events with better mobile support
         let target = e.target;
         if (e.type === 'touchmove' && e.touches && e.touches.length > 0) {
             const touch = e.touches[0];
             target = document.elementFromPoint(touch.clientX, touch.clientY);
+            console.log('Touch move - target found:', target ? target.classList.toString() : 'none');
         }
         
-        if (!target || !target.dataset || !target.classList.contains('pp-cell')) return;
+        if (!target || !target.dataset || !target.classList.contains('pp-cell')) {
+            console.log('No valid target found in continuePath');
+            return;
+        }
         
         const r = parseInt(target.dataset.row);
         const c = parseInt(target.dataset.col);
         
-        if (isNaN(r) || isNaN(c)) return;
+        console.log('Continue path to cell:', r, c);
+        
+        if (isNaN(r) || isNaN(c)) {
+            console.log('Invalid coordinates in continuePath');
+            return;
+        }
         
         // Check if this is a valid next cell
         const lastPos = levelCurrentPath.path[levelCurrentPath.path.length - 1];
@@ -1519,33 +1576,56 @@ function loadPuzzleLevel(levelIndex) {
                     levelCurrentPath.path.push([r, c]);
                     drawBoard();
                     
-                    // Add visual feedback
-                    target.style.transition = 'all 0.1s';
-                    target.style.transform = 'scale(1.05)';
+                    console.log('Path continued to:', r, c);
+                    
+                    // Enhanced visual feedback for both mobile and desktop
+                    if (isMobileDevice()) {
+                        target.style.transform = 'scale(1.02)';
+                        target.style.backgroundColor = 'rgba(46, 157, 247, 0.15)';
+                        // Add subtle haptic feedback
+                        if (navigator.vibrate) {
+                            navigator.vibrate(5);
+                        }
+                    } else {
+                        target.style.transform = 'scale(1.05)';
+                    }
+                    
                     setTimeout(() => {
                         if (target.style) {
                             target.style.transform = '';
-                            target.style.transition = '';
+                            target.style.backgroundColor = '';
                         }
-                    }, 100);
+                    }, 150);
+                } else {
+                    console.log('Cell already in path');
                 }
+            } else {
+                console.log('Cannot continue path - cell occupied by different number');
             }
+        } else {
+            console.log('Cell not adjacent to path');
         }
     }
 
     function endPath(e) {
         if (!levelCurrentPath || solved || !isDrawing) return;
         e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('=== END PATH ===');
+        console.log('Event type:', e.type);
         
         // Handle both mouse and touch events
         let target = e.target;
         if (e.type === 'touchend' && e.changedTouches && e.changedTouches.length > 0) {
             const touch = e.changedTouches[0];
             target = document.elementFromPoint(touch.clientX, touch.clientY);
+            console.log('Touch end - target found:', target ? target.classList.toString() : 'none');
         }
         
         if (!target || !target.dataset) {
             // Invalid end point, clear current path
+            console.log('Invalid end point, clearing path');
             isDrawing = false;
             levelCurrentPath = null;
             drawBoard();
@@ -1555,7 +1635,10 @@ function loadPuzzleLevel(levelIndex) {
         const r = parseInt(target.dataset.row);
         const c = parseInt(target.dataset.col);
         
+        console.log('End path at cell:', r, c);
+        
         if (isNaN(r) || isNaN(c)) {
+            console.log('Invalid coordinates, clearing path');
             isDrawing = false;
             levelCurrentPath = null;
             drawBoard();
@@ -1571,11 +1654,25 @@ function loadPuzzleLevel(levelIndex) {
             console.log(`✅ Valid connection made for number ${levelCurrentPath.number}`);
             console.log('Current level paths:', Object.keys(levelPaths));
             
-            // Add celebration effect for successful connection
+            // Enhanced celebration effect for successful connection
             if (target.style) {
-                target.style.animation = 'pulse 0.5s ease-in-out';
+                if (isMobileDevice()) {
+                    target.style.animation = 'pulse 0.5s ease-in-out';
+                    target.style.transform = 'scale(1.1)';
+                    // Strong haptic feedback for success
+                    if (navigator.vibrate) {
+                        navigator.vibrate([50, 25, 50]);
+                    }
+                } else {
+                    target.style.animation = 'pulse 0.5s ease-in-out';
+                    target.style.transform = 'scale(1.15)';
+                }
+                
                 setTimeout(() => {
-                    if (target.style) target.style.animation = '';
+                    if (target.style) {
+                        target.style.animation = '';
+                        target.style.transform = '';
+                    }
                 }, 500);
             }
             
@@ -1586,6 +1683,11 @@ function loadPuzzleLevel(levelIndex) {
             // Invalid connection, clear path
             console.log(`❌ Invalid connection attempt for number ${levelCurrentPath.number}, path length: ${levelCurrentPath.path.length}`);
             sounds.click();
+            
+            // Feedback for invalid connection
+            if (isMobileDevice() && navigator.vibrate) {
+                navigator.vibrate(20); // Short vibration for invalid move
+            }
         }
         
         isDrawing = false;
@@ -1596,18 +1698,36 @@ function loadPuzzleLevel(levelIndex) {
     function handleTouchMove(e) {
         if (!isDrawing || !levelCurrentPath) return;
         e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('=== TOUCH MOVE ===');
         
         const touch = e.touches[0];
         const element = document.elementFromPoint(touch.clientX, touch.clientY);
         
+        console.log('Touch move - element found:', element ? element.classList.toString() : 'none');
+        
         if (element && element.classList.contains('pp-cell')) {
-            // Add visual feedback for touch
-            element.style.transform = 'scale(1.05)';
+            // Enhanced visual feedback for touch
+            element.style.transform = 'scale(1.02)';
+            element.style.backgroundColor = 'rgba(46, 157, 247, 0.1)';
             setTimeout(() => {
-                if (element.style) element.style.transform = '';
+                if (element.style) {
+                    element.style.transform = '';
+                    element.style.backgroundColor = '';
+                }
             }, 100);
             
-            continuePath({target: element, type: 'touchmove', touches: e.touches});
+            // Call continuePath with synthetic event
+            const syntheticEvent = {
+                target: element,
+                type: 'touchmove',
+                touches: e.touches,
+                preventDefault: () => {},
+                stopPropagation: () => {}
+            };
+            
+            continuePath(syntheticEvent);
             
             // Add haptic feedback for mobile
             if (navigator.vibrate && isMobileDevice()) {
@@ -1787,12 +1907,15 @@ function adaptToDevice() {
 
 // Enable mobile-specific optimizations
 function enableMobileOptimizations() {
+    console.log('Enabling mobile optimizations...');
+    
     // Add viewport meta tag if not present
     if (!document.querySelector('meta[name="viewport"]')) {
         const viewport = document.createElement('meta');
         viewport.name = 'viewport';
-        viewport.content = 'width=device-width, initial-scale=1.0, user-scalable=no';
+        viewport.content = 'width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0';
         document.head.appendChild(viewport);
+        console.log('Viewport meta tag added');
     }
     
     // Prevent zoom on input focus (mobile safari)
@@ -1805,9 +1928,39 @@ function enableMobileOptimizations() {
     
     // Add touch-friendly styles
     document.body.style.touchAction = 'manipulation';
-    
-    // Improve tap delay
     document.body.style.webkitTapHighlightColor = 'transparent';
+    document.body.style.webkitTouchCallout = 'none';
+    document.body.style.webkitUserSelect = 'none';
+    document.body.style.userSelect = 'none';
+    
+    // Improve tap delay and responsiveness
+    document.body.style.cursor = 'pointer';
+    
+    // Add mobile-specific CSS for game boards
+    const style = document.createElement('style');
+    style.textContent = `
+        .mobile-device .pp-cell {
+            user-select: none !important;
+            -webkit-user-select: none !important;
+            -webkit-touch-callout: none !important;
+            touch-action: manipulation !important;
+            cursor: pointer !important;
+        }
+        
+        .mobile-device .cf-cell {
+            user-select: none !important;
+            -webkit-user-select: none !important;
+            touch-action: manipulation !important;
+        }
+        
+        .mobile-device .game-board-container {
+            overflow-x: hidden !important;
+            touch-action: pan-y !important;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    console.log('Mobile optimizations enabled successfully');
 }
 
 // Handle orientation changes on mobile devices

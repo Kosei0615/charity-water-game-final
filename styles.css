@@ -1272,26 +1272,29 @@ main {
         min-height: 60px;
     }
     
-    /* Puzzle Pipeline Mobile Styles - FIXED */
+    /* Puzzle Pipeline Mobile Styles - ENHANCED FOR TOUCH */
     .pp-board {
-        max-width: 90vw !important;
-        width: 90vw !important;
-        margin: 1rem auto !important;
-        gap: 6px !important;
-        padding: 0.75rem !important;
+        max-width: 95vw !important;
+        width: 95vw !important;
+        margin: 0.5rem auto !important;
+        gap: 4px !important;
+        padding: 0.5rem !important;
         /* Reset all transform properties for mobile */
         position: static !important;
         left: auto !important;
         transform: none !important;
         /* Ensure mobile responsive sizing */
         grid-template-columns: repeat(var(--grid-size, 4), 1fr) !important;
+        /* Better mobile performance */
+        will-change: auto !important;
+        contain: layout style !important;
     }
     
     /* Override all Puzzle Pipeline specific rules for mobile */
     #puzzle-pipeline-page .pp-board {
-        max-width: 90vw !important;
-        width: 90vw !important;
-        margin: 0.5rem auto !important;
+        max-width: 95vw !important;
+        width: 95vw !important;
+        margin: 0.25rem auto !important;
         position: static !important;
         left: auto !important;
         transform: none !important;
@@ -1300,13 +1303,50 @@ main {
     }
     
     .pp-cell {
-        min-height: 55px !important;
-        min-width: 55px !important;
-        font-size: 1.1rem !important;
+        min-height: 45px !important;
+        min-width: 45px !important;
+        font-size: 1rem !important;
         border-radius: 4px;
-        /* Enhanced touch targets */
-        padding: 4px;
-        touch-action: manipulation;
+        /* Enhanced touch targets and performance */
+        padding: 2px;
+        touch-action: manipulation !important;
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        transform: translateZ(0) !important;
+        backface-visibility: hidden !important;
+        /* Larger touch area */
+        position: relative;
+    }
+    
+    /* Add invisible touch overlay for better mobile interaction */
+    .pp-cell::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        z-index: 1;
+        pointer-events: auto;
+    }
+    
+    /* Enhanced mobile touch responsiveness */
+    .pp-cell:active {
+        transform: scale(0.95) !important;
+        background-color: rgba(46, 157, 247, 0.2) !important;
+        transition: all 0.1s ease !important;
+    }
+    
+    /* Mobile-specific game instructions */
+    .mobile-only {
+        display: block !important;
+        background: rgba(46, 157, 247, 0.1);
+        padding: 0.5rem;
+        border-radius: 8px;
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+        text-align: center;
     }
     
     /* Game Controls Mobile */
